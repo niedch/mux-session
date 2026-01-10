@@ -1,0 +1,9 @@
+search_paths = [ "/home/nic/projects" ]
+
+[default]
+[[default.window]]
+session_name = "Nvim"
+
+[[default.window]]
+session_name = "Software"
+
