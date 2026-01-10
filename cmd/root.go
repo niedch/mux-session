@@ -1,14 +1,11 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"os"
-	"path/filepath"
-	"strings"
 
-	"github.com/koki-develop/go-fzf"
 	"github.com/niedch/mux-session/internal/conf"
+	"github.com/niedch/mux-session/internal/fzf"
 	"github.com/spf13/cobra"
 )
 
@@ -29,74 +26,28 @@ to quickly create a Cobra application.`,
 			return
 		}
 
-		var dirs []string
-		for _, searchPath := range config.Search_paths {
-			entries, err := os.ReadDir(searchPath)
-			if err != nil {
-				log.Printf("Error reading %s: %v", searchPath, err)
-				continue
-			}
+		// Create directory provider
+		provider := fzf.NewDirectoryProvider(config.Search_paths)
 
-			for _, entry := range entries {
-				if entry.IsDir() {
-					// Skip hidden directories
-					if !strings.HasPrefix(entry.Name(), ".") {
-						fullPath := filepath.Join(searchPath, entry.Name())
-						dirs = append(dirs, fullPath)
-					}
-				}
-			}
-		}
-
-		// Create fzf instance
-		f, err := fzf.New(
-			fzf.WithInputPosition(fzf.InputPositionBottom),
-		)
+		// Start fzf
+		selectedIndices, err := fzf.StartFzf(provider)
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
 
-		// Run fzf to select directory
-		idxs, err := f.Find(dirs, func(i int) string {
-			return dirs[i]
-		}, fzf.WithPreviewWindow(func(i, width, height int) string {
-			if i == -1 {
-				return ""
-			}
-
-			// Get directory path
-			dirPath := dirs[i]
-
-			// Read directory contents
-			entries, err := os.ReadDir(dirPath)
-			if err != nil {
-				return fmt.Sprintf("Error reading %s: %v", dirPath, err)
-			}
-
-			// Build preview content
-			var preview strings.Builder
-			preview.WriteString(fmt.Sprintf("Directory: %s\n\n", dirPath))
-
-			for _, entry := range entries {
-				if entry.IsDir() {
-					preview.WriteString(fmt.Sprintf("📁 %s/\n", entry.Name()))
-				} else {
-					preview.WriteString(fmt.Sprintf("📄 %s\n", entry.Name()))
-				}
-			}
-
-			return preview.String()
-		}))
+		// Get selected directories
+		items, err := provider.GetItems()
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
 
-		// Print selected directory
-		for _, i := range idxs {
-			selectedDir := dirs[i]
-			log.Printf("Selected directory: %s", selectedDir)
+		// Print selected directories
+		for _, i := range selectedIndices {
+			if i < len(items) {
+				log.Printf("Selected directory: %s", items[i])
+			}
 		}
 
 	},
