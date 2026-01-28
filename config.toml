@@ -7,3 +7,4 @@ session_name = "Nvim"
 [[default.window]]
 session_name = "Software"
 
+[[default.window.panel]]

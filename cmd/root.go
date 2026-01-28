@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/GianlucaP106/gotmux/gotmux"
 	"github.com/niedch/mux-session/internal/conf"
 	"github.com/niedch/mux-session/internal/fzf"
 	"github.com/spf13/cobra"
@@ -19,24 +20,26 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// Load config
 		config, err := conf.Load()
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
 
-		// Create directory provider
 		provider := fzf.NewDirectoryProvider(config.Search_paths)
-
-		// Start fzf
 		selectedIndices, err := fzf.StartFzf(provider)
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
 
-		// Get selected directories
+		tmux, _ := gotmux.DefaultTmux()
+		sessions, _ := tmux.ListSessions()
+		
+		for _, session := range sessions {
+			log.Println(session.Name)
+		}
+
 		items, err := provider.GetItems()
 		if err != nil {
 			log.Fatal(err)
@@ -49,7 +52,6 @@ to quickly create a Cobra application.`,
 				log.Printf("Selected directory: %s", items[i])
 			}
 		}
-
 	},
 }
 
