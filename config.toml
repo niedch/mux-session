@@ -33,6 +33,13 @@ name = "dotfiles"
 window_name = "Nvim"
 cmd = "vim ."
 
+
 [[project.window]]
 window_name = "lazydocker"
+
+[[project.window.panel_config]]
+panel_direction = "r"
+
+[[project.window.panel_config]]
+panel_direction = "v"
 cmd = "lazydocker"

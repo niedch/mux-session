@@ -34,7 +34,7 @@ to quickly create a Cobra application.`,
 			return
 		}
 
-		provider := fzf.NewDirectoryProvider(config.Search_paths)
+		provider := fzf.NewDirectoryProvider(config.SearchPaths)
 		dir, err := fzf.StartFzf(provider)
 		if err != nil {
 			log.Fatal(err)

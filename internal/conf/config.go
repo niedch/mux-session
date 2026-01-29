@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"errors"
 	"log"
 
 	"github.com/knadh/koanf/parsers/toml"
@@ -8,9 +9,15 @@ import (
 	"github.com/knadh/koanf/v2"
 )
 
+type PanelConfig struct {
+	PanelDirection string `koanf:"panel_direction"`
+	Cmd            string `koanf:"cmd"`
+}
+
 type WindowConfig struct {
-	WindowName string  `koanf:"window_name"`
-	Cmd        *string `koanf:"cmd"`
+	WindowName  string        `koanf:"window_name"`
+	PanelConfig []PanelConfig `koanf:"panel_config"`
+	Cmd         *string       `koanf:"cmd"`
 }
 
 type ProjectConfig struct {
@@ -19,9 +26,9 @@ type ProjectConfig struct {
 }
 
 type Config struct {
-	Search_paths []string        `koanf:"search_paths"`
-	Default      ProjectConfig   `koanf:"default"`
-	Project      []ProjectConfig `koanf:"project"`
+	SearchPaths []string        `koanf:"search_paths"`
+	Default     ProjectConfig   `koanf:"default"`
+	Project     []ProjectConfig `koanf:"project"`
 }
 
 func Load() (*Config, error) {
@@ -38,6 +45,11 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
+	if err := validateConfig(&conf); err != nil {
+		log.Fatal("Config validation failed", err)
+		return nil, err
+	}
+
 	return &conf, nil
 }
 
@@ -45,6 +57,26 @@ func loadProjectConfig(k *koanf.Koanf) error {
 	if err := k.Load(file.Provider("config.toml"), toml.Parser()); err != nil {
 		log.Fatal("Cannot load config from 'config.toml'", err)
 		return err
+	}
+	return nil
+}
+
+func validateConfig(conf *Config) error {
+	for _, project := range conf.Project {
+		if err := validateProjectConfig(project); err != nil {
+			return err
+		}
+	}
+	return validateProjectConfig(conf.Default)
+}
+
+func validateProjectConfig(project ProjectConfig) error {
+	for _, window := range project.WindowConfig {
+		for _, panel := range window.PanelConfig {
+			if panel.PanelDirection != "v" && panel.PanelDirection != "h" {
+				return errors.New("panel_direction must be 'v' or 'h'")
+			}
+		}
 	}
 	return nil
 }
