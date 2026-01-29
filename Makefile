@@ -8,7 +8,7 @@ GOMOD=$(GOCMD) mod
 BINARY_NAME=mux-session
 BINARY_UNIX=$(BINARY_NAME)_unix
 
-.PHONY: all build clean test run deps help install
+.PHONY: all build clean test run deps help install e2e
 
 all: test build
 
@@ -17,6 +17,9 @@ build:
 
 test:
 	$(GOTEST) -v ./...
+
+e2e:
+	$(GOTEST) -v ./e2e/...
 
 run:
 	$(GOBUILD) -o bin/$(BINARY_NAME) -v .
@@ -47,6 +50,7 @@ help:
 	@echo "  make build    - Build the binary"
 	@echo "  make run      - Build and run the binary"
 	@echo "  make test     - Run tests"
+	@echo "  make e2e      - Run end-to-end tests"
 	@echo "  make clean    - Clean build artifacts"
 	@echo "  make deps     - Download and tidy dependencies"
 	@echo "  make dev      - Run directly without building binary"
