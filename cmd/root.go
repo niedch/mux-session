@@ -3,10 +3,12 @@ package cmd
 import (
 	"log"
 	"os"
+	"path/filepath"
+	"slices"
 
-	"github.com/GianlucaP106/gotmux/gotmux"
 	"github.com/niedch/mux-session/internal/conf"
 	"github.com/niedch/mux-session/internal/fzf"
+	"github.com/niedch/mux-session/internal/tmux"
 	"github.com/spf13/cobra"
 )
 
@@ -26,30 +28,34 @@ to quickly create a Cobra application.`,
 			return
 		}
 
+		tmux, err := tmux.NewTmux()
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+
 		provider := fzf.NewDirectoryProvider(config.Search_paths)
-		selectedIndices, err := fzf.StartFzf(provider)
+		dir, err := fzf.StartFzf(provider)
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
 
-		tmux, _ := gotmux.DefaultTmux()
-		sessions, _ := tmux.ListSessions()
-		
-		for _, session := range sessions {
-			log.Println(session.Name)
-		}
+		dir_name := filepath.Base(*dir)
+		// projectConfig := config.GetProjectConfig(dir_name)
 
-		items, err := provider.GetItems()
+		sessions, err := tmux.ListSessions()
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
 
-		// Print selected directories
-		for _, i := range selectedIndices {
-			if i < len(items) {
-				log.Printf("Selected directory: %s", items[i])
+		log.Println("Switching to", dir_name)
+
+		if existing := slices.Contains(sessions, dir_name); existing {
+			if err := tmux.SwitchSession(dir_name); err != nil {
+				log.Fatal(err)
+				return
 			}
 		}
 	},

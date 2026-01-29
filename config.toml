@@ -1,10 +1,35 @@
 search_paths = [ "/home/nic/projects" ]
+socket_path = "/"
 
 [default]
 [[default.window]]
-session_name = "Nvim"
-
-[[default.window]]
-session_name = "Software"
+window_name = "Nvim"
 
 [[default.window.panel]]
+cmd = """
+vim .
+"""
+
+[[default.window]]
+window_name = "Runner"
+cmd = """
+vim .
+"""
+
+[[default.window]]
+window_name = "OpenCode"
+cmd = """
+opencode .
+"""
+
+
+[project]
+name = "mux-session"
+
+[[project.window]]
+window_name = "Nvim"
+
+[[project.window.panel]]
+cmd = """
+vim .
+"""

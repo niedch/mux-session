@@ -17,14 +17,14 @@ type DataProvider interface {
 
 // DirectoryProvider implements DataProvider for directory browsing
 type DirectoryProvider struct {
-	searchPaths []string
-	items       []string
+	searchPaths      []string
+	items            []string
 }
 
 // NewDirectoryProvider creates a new directory provider
 func NewDirectoryProvider(searchPaths []string) *DirectoryProvider {
 	return &DirectoryProvider{
-		searchPaths: searchPaths,
+		searchPaths:      searchPaths,
 	}
 }
 
@@ -42,11 +42,13 @@ func (dp *DirectoryProvider) GetItems() ([]string, error) {
 		}
 
 		for _, entry := range entries {
-			if entry.IsDir() {
-				if !strings.HasPrefix(entry.Name(), ".") {
-					fullPath := filepath.Join(searchPath, entry.Name())
-					dirs = append(dirs, fullPath)
-				}
+			if !entry.IsDir() {
+				continue
+			}
+
+			if !strings.HasPrefix(entry.Name(), ".") {
+				fullPath := filepath.Join(searchPath, entry.Name())
+				dirs = append(dirs, fullPath)
 			}
 		}
 	}

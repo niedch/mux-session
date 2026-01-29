@@ -8,13 +8,18 @@ import (
 	"github.com/knadh/koanf/v2"
 )
 
+type PanelConfig struct {
+	Cmd string `koanf:"cmd"`
+}
+
 type WindowConfig struct {
-	SessionName string `koanf:"session_name"`
+	WindowName  string        `koanf:"window_name"`
+	PanelConfig []PanelConfig `koanf:"panel"`
+	Cmd         *string       `koanf:"cmd"`
 }
 
 type ProjectConfig struct {
-	Name         *string      `koanf:"name"`
-	Dir          *string       `koanf:"dir"`
+	Name         *string        `koanf:"name"`
 	WindowConfig []WindowConfig `koanf:"window"`
 }
 
@@ -46,5 +51,26 @@ func loadProjectConfig(k *koanf.Koanf) error {
 		log.Fatal("Cannot load config from 'config.toml'", err)
 		return err
 	}
+	return nil
+}
+
+// Finds Project Config otherwise returns Default
+func (c *Config) GetProjectConfig(dir string) ProjectConfig {
+	projectConfig := c.findProject(dir)
+
+	if projectConfig == nil {
+		return c.Default
+	}
+
+	return *projectConfig
+}
+
+func (c *Config) findProject(dir string) *ProjectConfig {
+	for _, projectConfig := range c.Projects {
+		if *projectConfig.Name == dir {
+			return &projectConfig
+		}
+	}
+
 	return nil
 }
