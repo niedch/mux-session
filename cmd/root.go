@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var configFile string
+
 var rootCmd = &cobra.Command{
 	Use:   "mux-session",
 	Short: "A brief description of your application",
@@ -22,7 +24,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := conf.Load()
+		config, err := conf.Load(configFile)
 		if err != nil {
 			log.Fatal(err)
 			return
@@ -78,7 +80,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mux-session.yaml)")
+	rootCmd.Flags().StringVarP(&configFile, "file", "f", "", "Path to config file (default is XDG_CONFIG/mux-session/config.toml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.

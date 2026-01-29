@@ -8,7 +8,7 @@ GOMOD=$(GOCMD) mod
 BINARY_NAME=mux-session
 BINARY_UNIX=$(BINARY_NAME)_unix
 
-.PHONY: all build clean test run deps help
+.PHONY: all build clean test run deps help install
 
 all: test build
 
@@ -39,6 +39,9 @@ build-linux:
 dev:
 	$(GOCMD) run main.go
 
+install:
+	$(GOCMD) install .
+
 help:
 	@echo "Available commands:"
 	@echo "  make build    - Build the binary"
@@ -47,4 +50,5 @@ help:
 	@echo "  make clean    - Clean build artifacts"
 	@echo "  make deps     - Download and tidy dependencies"
 	@echo "  make dev      - Run directly without building binary"
+	@echo "  make install  - Install binary globally with go install"
 	@echo "  make all      - Run tests then build"

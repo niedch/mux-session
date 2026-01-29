@@ -2,7 +2,9 @@ package conf
 
 import (
 	"log"
+	"path/filepath"
 
+	"github.com/adrg/xdg"
 	"github.com/knadh/koanf/parsers/toml"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/v2"
@@ -31,10 +33,10 @@ type Config struct {
 	Project     []ProjectConfig `koanf:"project"`
 }
 
-func Load() (*Config, error) {
+func Load(configFile string) (*Config, error) {
 	k := koanf.New(".")
 
-	if err := loadProjectConfig(k); err != nil {
+	if err := loadProjectConfig(k, configFile); err != nil {
 		return nil, err
 	}
 
@@ -53,9 +55,14 @@ func Load() (*Config, error) {
 	return &conf, nil
 }
 
-func loadProjectConfig(k *koanf.Koanf) error {
-	if err := k.Load(file.Provider("config.toml"), toml.Parser()); err != nil {
-		log.Fatal("Cannot load config from 'config.toml'", err)
+func loadProjectConfig(k *koanf.Koanf, configFile string) error {
+	configPath := configFile
+	if configPath == "" {
+		configPath = filepath.Join(xdg.ConfigHome, "mux-session", "config.toml")
+	}
+
+	if err := k.Load(file.Provider(configPath), toml.Parser()); err != nil {
+		log.Fatal("Cannot load config from '"+configPath+"'", err)
 		return err
 	}
 	return nil

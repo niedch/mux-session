@@ -15,7 +15,7 @@ var configValidateCmd = &cobra.Command{
 JSON structure. This command is useful for validating that your configuration
 is properly loaded and structured.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := conf.Load()
+		config, err := conf.Load(configFile)
 		if err != nil {
 			fmt.Printf("Error loading config: %v\n", err)
 			return
@@ -25,5 +25,6 @@ is properly loaded and structured.`,
 }
 
 func init() {
+	configValidateCmd.Flags().StringVarP(&configFile, "file", "f", "", "Path to config file (default is XDG_CONFIG/mux-session/config.toml)")
 	rootCmd.AddCommand(configValidateCmd)
 }
