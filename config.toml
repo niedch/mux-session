@@ -22,7 +22,7 @@ opencode .
 name = "mux-session"
 
 [[project.window]]
-window_name = "Nvim"
+window_name = "nvim"
 cmd = "vim ."
 
 
@@ -30,7 +30,7 @@ cmd = "vim ."
 name = "dotfiles"
 
 [[project.window]]
-window_name = "Nvim"
+window_name = "nvim"
 primary = true
 cmd = "vim ."
 
