@@ -11,8 +11,7 @@ func NewTmux() (*Tmux, error) {
 	return &Tmux{}, nil
 }
 
-type Tmux struct {
-}
+type Tmux struct{}
 
 func (t *Tmux) ListSessions() ([]string, error) {
 	cmd := exec.Command("tmux", "list-sessions", "-F", "#S")
@@ -31,7 +30,27 @@ func (t *Tmux) ListSessions() ([]string, error) {
 	return result, nil
 }
 
+func (t *Tmux) CurrentSession() (string, error) {
+	cmd := exec.Command("tmux", "display-message", "-p", "#S")
+	output, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+
+	return strings.TrimSpace(string(output)), nil
+}
+
 func (t *Tmux) SwitchSession(session_name string) error {
+	current_session, err := t.CurrentSession()
+	if err != nil {
+		return err
+	}
+
+	// No need to switch Sessions
+	if current_session == session_name {
+		return nil
+	}
+
 	sessions, err := t.ListSessions()
 	if err != nil {
 		return err
