@@ -58,7 +58,11 @@ func Load(configFile string) (*Config, error) {
 func loadProjectConfig(k *koanf.Koanf, configFile string) error {
 	configPath := configFile
 	if configPath == "" {
-		configPath = filepath.Join(xdg.ConfigHome, "mux-session", "config.toml")
+		var err error
+		configPath, err = xdg.SearchConfigFile(filepath.Join("mux-session", "config.toml"))
+		if err != nil {
+			return err
+		}
 	}
 
 	if err := k.Load(file.Provider(configPath), toml.Parser()); err != nil {
