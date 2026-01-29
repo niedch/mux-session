@@ -1,5 +1,4 @@
 search_paths = [ "/home/nic/projects" ]
-socket_path = "/"
 
 [default]
 [[default.window]]
