@@ -17,6 +17,7 @@ type PanelConfig struct {
 type WindowConfig struct {
 	WindowName  string        `koanf:"window_name"`
 	PanelConfig []PanelConfig `koanf:"panel_config"`
+	Primary     *bool         `koanf:"primary"`
 	Cmd         *string       `koanf:"cmd"`
 }
 
@@ -71,13 +72,25 @@ func validateConfig(conf *Config) error {
 }
 
 func validateProjectConfig(project ProjectConfig) error {
+	primaryCount := 0
 	for _, window := range project.WindowConfig {
 		for _, panel := range window.PanelConfig {
 			if panel.PanelDirection != "v" && panel.PanelDirection != "h" {
 				return errors.New("panel_direction must be 'v' or 'h'")
 			}
 		}
+
+		// Check if this window is marked as primary
+		if window.Primary != nil && *window.Primary {
+			primaryCount++
+		}
 	}
+
+	// Validate that only one window is marked as primary
+	if primaryCount > 1 {
+		return errors.New("only one window can be marked as primary in project configuration")
+	}
+
 	return nil
 }
 

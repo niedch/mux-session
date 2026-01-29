@@ -3,6 +3,7 @@ package tmux
 import (
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -66,7 +67,9 @@ func (t *Tmux) SwitchSession(session_name string) error {
 	return fmt.Errorf("Was not able to find session '%s'", session_name)
 }
 
-func (t *Tmux) CreateSession(dir_name string, projectConfig conf.ProjectConfig) error {
+func (t *Tmux) CreateSession(dir_path string, projectConfig conf.ProjectConfig) error {
+	dir_name := filepath.Base(dir_path)
+
 	sessionName := dir_name
 	if projectConfig.Name != nil {
 		sessionName = *projectConfig.Name
@@ -78,20 +81,20 @@ func (t *Tmux) CreateSession(dir_name string, projectConfig conf.ProjectConfig) 
 
 	// Create new session with first window
 	firstWindow := projectConfig.WindowConfig[0]
-	if err := exec.Command("tmux", "new-session", "-d", "-s", sessionName, "-n", firstWindow.WindowName).Run(); err != nil {
+	if err := exec.Command("tmux", "new-session", "-d", "-s", sessionName, "-n", firstWindow.WindowName, "-c", dir_path).Run(); err != nil {
 		return fmt.Errorf("failed to create session '%s': %w", sessionName, err)
 	}
 
 	// Setup panels for first window if configured
 	if len(firstWindow.PanelConfig) > 0 {
-		if err := t.setupPanels(sessionName, firstWindow.WindowName, firstWindow.PanelConfig); err != nil {
+		if err := t.setupPanels(sessionName, firstWindow.WindowName, dir_path, firstWindow.PanelConfig); err != nil {
 			return fmt.Errorf("failed to setup panels for first window: %w", err)
 		}
 	}
 
 	// Create additional windows
 	for _, window := range projectConfig.WindowConfig[1:] {
-		if err := t.createWindowWithPanels(sessionName, window); err != nil {
+		if err := t.createWindowWithPanels(sessionName, dir_path, window); err != nil {
 			return err
 		}
 	}
@@ -105,20 +108,28 @@ func (t *Tmux) CreateSession(dir_name string, projectConfig conf.ProjectConfig) 
 		}
 	}
 
+	// Select primary window if configured, otherwise select first window
+	primaryWindow := t.findPrimaryWindow(projectConfig.WindowConfig)
+	if primaryWindow != "" {
+		if err := exec.Command("tmux", "select-window", "-t", fmt.Sprintf("%s:%s", sessionName, primaryWindow)).Run(); err != nil {
+			return fmt.Errorf("failed to select primary window '%s': %w", primaryWindow, err)
+		}
+	}
+
 	// Switch to the new session
 	return t.SwitchSession(sessionName)
 }
 
-func (t *Tmux) createWindowWithPanels(sessionName string, window conf.WindowConfig) error {
+func (t *Tmux) createWindowWithPanels(sessionName string, dirPath string, window conf.WindowConfig) error {
 	// Create new window
-	cmd := exec.Command("tmux", "new-window", "-t", sessionName, "-n", window.WindowName)
+	cmd := exec.Command("tmux", "new-window", "-t", sessionName, "-n", window.WindowName, "-c", dirPath)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to create window '%s' in session '%s': %w", window.WindowName, sessionName, err)
 	}
 
 	// Setup panels if configured
 	if len(window.PanelConfig) > 0 {
-		if err := t.setupPanels(sessionName, window.WindowName, window.PanelConfig); err != nil {
+		if err := t.setupPanels(sessionName, window.WindowName, dirPath, window.PanelConfig); err != nil {
 			return fmt.Errorf("failed to setup panels for window '%s': %w", window.WindowName, err)
 		}
 	}
@@ -135,7 +146,7 @@ func (t *Tmux) createWindowWithPanels(sessionName string, window conf.WindowConf
 	return nil
 }
 
-func (t *Tmux) setupPanels(sessionName, windowName string, panels []conf.PanelConfig) error {
+func (t *Tmux) setupPanels(sessionName, windowName, dirPath string, panels []conf.PanelConfig) error {
 	if len(panels) == 0 {
 		return nil
 	}
@@ -168,13 +179,13 @@ func (t *Tmux) setupPanels(sessionName, windowName string, panels []conf.PanelCo
 		switch panel.PanelDirection {
 		case "v":
 			// Split vertically (top/bottom)
-			cmd := exec.Command("tmux", "split-window", "-t", target, "-v")
+			cmd := exec.Command("tmux", "split-window", "-t", target, "-v", "-c", dirPath)
 			if err := cmd.Run(); err != nil {
 				return fmt.Errorf("failed to create vertical split for panel %d: %w", i+1, err)
 			}
 		case "h":
 			// Split horizontally (left/right)
-			cmd := exec.Command("tmux", "split-window", "-t", target, "-h")
+			cmd := exec.Command("tmux", "split-window", "-t", target, "-h", "-c", dirPath)
 			if err := cmd.Run(); err != nil {
 				return fmt.Errorf("failed to create horizontal split for panel %d: %w", i+1, err)
 			}
@@ -192,4 +203,13 @@ func (t *Tmux) setupPanels(sessionName, windowName string, panels []conf.PanelCo
 	}
 
 	return nil
+}
+
+func (t *Tmux) findPrimaryWindow(windows []conf.WindowConfig) string {
+	for _, window := range windows {
+		if window.Primary != nil && *window.Primary {
+			return window.WindowName
+		}
+	}
+	return ""
 }

@@ -59,7 +59,7 @@ to quickly create a Cobra application.`,
 			return
 		}
 
-		if err := tmux.CreateSession(dir_name, projectConfig); err != nil {
+		if err := tmux.CreateSession(*dir, projectConfig); err != nil {
 			log.Fatal(err)
 			return
 		}
