@@ -3,7 +3,6 @@ module github.com/niedch/mux-session
 go 1.25.5
 
 require (
-	github.com/GianlucaP106/gotmux v0.5.0
 	github.com/knadh/koanf/parsers/toml v0.1.0
 	github.com/knadh/koanf/providers/file v1.2.1
 	github.com/knadh/koanf/v2 v2.3.0

@@ -52,7 +52,7 @@ to quickly create a Cobra application.`,
 
 		log.Println("Switching to", dir_name)
 
-		if existing := slices.Contains(sessions, dir_name); existing {
+		if slices.Contains(sessions, dir_name) {
 			if err := tmux.SwitchSession(dir_name); err != nil {
 				log.Fatal(err)
 				return

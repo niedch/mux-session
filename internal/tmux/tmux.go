@@ -3,24 +3,15 @@ package tmux
 import (
 	"fmt"
 	"os/exec"
+	"slices"
 	"strings"
-
-	"github.com/GianlucaP106/gotmux/gotmux"
 )
 
 func NewTmux() (*Tmux, error) {
-	tmux, err := gotmux.DefaultTmux()
-	if err != nil {
-		return nil, err
-	}
-
-	return &Tmux{
-		tmux: tmux,
-	}, nil
+	return &Tmux{}, nil
 }
 
 type Tmux struct {
-	tmux *gotmux.Tmux
 }
 
 func (t *Tmux) ListSessions() ([]string, error) {
@@ -41,16 +32,14 @@ func (t *Tmux) ListSessions() ([]string, error) {
 }
 
 func (t *Tmux) SwitchSession(session_name string) error {
-	sessions, err := t.tmux.ListSessions()
+	sessions, err := t.ListSessions()
 	if err != nil {
 		return err
 	}
 
-	for _, session := range sessions {
-		if session.Name == session_name {
-			cmd := exec.Command("tmux", "switch-client", "-t", session_name)
-			return cmd.Run()
-		}
+	if slices.Contains(sessions, session_name) {
+		cmd := exec.Command("tmux", "switch-client", "-t", session_name)
+		return cmd.Run()
 	}
 
 	return fmt.Errorf("Was not able to find session '%s'", session_name)
