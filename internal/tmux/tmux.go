@@ -5,6 +5,8 @@ import (
 	"os/exec"
 	"slices"
 	"strings"
+
+	"github.com/niedch/mux-session/internal/conf"
 )
 
 func NewTmux() (*Tmux, error) {
@@ -62,4 +64,49 @@ func (t *Tmux) SwitchSession(session_name string) error {
 	}
 
 	return fmt.Errorf("Was not able to find session '%s'", session_name)
+}
+
+func (t *Tmux) CreateSession(dir_name string, projectConfig conf.ProjectConfig) error {
+	sessionName := dir_name
+	if projectConfig.Name != nil {
+		sessionName = *projectConfig.Name
+	}
+
+	if len(projectConfig.WindowConfig) == 0 {
+		return fmt.Errorf("no window configuration found for session '%s'", sessionName)
+	}
+
+	// Create new session with first window
+	firstWindow := projectConfig.WindowConfig[0]
+	cmd := exec.Command("tmux", "new-session", "-d", "-s", sessionName, "-n", firstWindow.WindowName)
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to create session '%s': %w", sessionName, err)
+	}
+
+	// Create additional windows
+	for _, window := range projectConfig.WindowConfig[1:] {
+		cmd := exec.Command("tmux", "new-window", "-t", sessionName, "-n", window.WindowName)
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to create window '%s' in session '%s': %w", window.WindowName, sessionName, err)
+		}
+
+		// Execute command if specified
+		if window.Cmd != nil && *window.Cmd != "" {
+			cmd := exec.Command("tmux", "send-keys", "-t", fmt.Sprintf("%s:%s", sessionName, window.WindowName), *window.Cmd, "C-m")
+			if err := cmd.Run(); err != nil {
+				return fmt.Errorf("failed to send command to window '%s': %w", window.WindowName, err)
+			}
+		}
+	}
+
+	// Setup first window command
+	if firstWindow.Cmd != nil && *firstWindow.Cmd != "" {
+		cmd := exec.Command("tmux", "send-keys", "-t", fmt.Sprintf("%s:%s", sessionName, firstWindow.WindowName), *firstWindow.Cmd, "C-m")
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to send command to window '%s': %w", firstWindow.WindowName, err)
+		}
+	}
+
+	// Switch to the new session
+	return t.SwitchSession(sessionName)
 }

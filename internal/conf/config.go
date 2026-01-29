@@ -8,14 +8,9 @@ import (
 	"github.com/knadh/koanf/v2"
 )
 
-type PanelConfig struct {
-	Cmd string `koanf:"cmd"`
-}
-
 type WindowConfig struct {
-	WindowName  string        `koanf:"window_name"`
-	PanelConfig []PanelConfig `koanf:"panel"`
-	Cmd         *string       `koanf:"cmd"`
+	WindowName string  `koanf:"window_name"`
+	Cmd        *string `koanf:"cmd"`
 }
 
 type ProjectConfig struct {
@@ -26,7 +21,7 @@ type ProjectConfig struct {
 type Config struct {
 	Search_paths []string        `koanf:"search_paths"`
 	Default      ProjectConfig   `koanf:"default"`
-	Projects     []ProjectConfig `koanf:"project"`
+	Project      []ProjectConfig `koanf:"project"`
 }
 
 func Load() (*Config, error) {
@@ -66,7 +61,7 @@ func (c *Config) GetProjectConfig(dir string) ProjectConfig {
 }
 
 func (c *Config) findProject(dir string) *ProjectConfig {
-	for _, projectConfig := range c.Projects {
+	for _, projectConfig := range c.Project {
 		if *projectConfig.Name == dir {
 			return &projectConfig
 		}

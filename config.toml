@@ -2,17 +2,13 @@ search_paths = [ "/home/nic/projects" ]
 
 [default]
 [[default.window]]
-window_name = "Nvim"
-
-[[default.window.panel]]
-cmd = """
-vim .
-"""
+window_name = "VIM"
+cmd = "vim ."
 
 [[default.window]]
 window_name = "Runner"
 cmd = """
-vim .
+lazydocker
 """
 
 [[default.window]]
@@ -22,13 +18,21 @@ opencode .
 """
 
 
-[project]
+[[project]]
 name = "mux-session"
 
 [[project.window]]
 window_name = "Nvim"
+cmd = "vim ."
 
-[[project.window.panel]]
-cmd = """
-vim .
-"""
+
+[[project]]
+name = "dotfiles"
+
+[[project.window]]
+window_name = "Nvim"
+cmd = "vim ."
+
+[[project.window]]
+window_name = "lazydocker"
+cmd = "lazydocker"

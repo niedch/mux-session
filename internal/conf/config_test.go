@@ -17,7 +17,7 @@ func TestGetProjectConfig(t *testing.T) {
 				Default: ProjectConfig{
 					Name: stringPtr("default-project"),
 				},
-				Projects: []ProjectConfig{},
+				Project: []ProjectConfig{},
 			},
 			dir: "project",
 			expected: ProjectConfig{
@@ -30,7 +30,7 @@ func TestGetProjectConfig(t *testing.T) {
 				Default: ProjectConfig{
 					Name: stringPtr("default-project"),
 				},
-				Projects: []ProjectConfig{
+				Project: []ProjectConfig{
 					{
 						Name: stringPtr("test-project"),
 					},
@@ -47,7 +47,7 @@ func TestGetProjectConfig(t *testing.T) {
 				Default: ProjectConfig{
 					Name: stringPtr("default-project"),
 				},
-				Projects: []ProjectConfig{
+				Project: []ProjectConfig{
 					{
 						Name: stringPtr("test-project"),
 					},

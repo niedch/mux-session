@@ -42,7 +42,7 @@ to quickly create a Cobra application.`,
 		}
 
 		dir_name := filepath.Base(*dir)
-		// projectConfig := config.GetProjectConfig(dir_name)
+		projectConfig := config.GetProjectConfig(dir_name)
 
 		sessions, err := tmux.ListSessions()
 		if err != nil {
@@ -55,6 +55,13 @@ to quickly create a Cobra application.`,
 				log.Fatal(err)
 				return
 			}
+
+			return
+		}
+
+		if err := tmux.CreateSession(dir_name, projectConfig); err != nil {
+			log.Fatal(err)
+			return
 		}
 	},
 }
