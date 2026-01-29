@@ -10,10 +10,11 @@ import (
 // configValidateCmd represents the configValidate command
 var configValidateCmd = &cobra.Command{
 	Use:   "config-validate",
-	Short: "Validate and pretty print the configuration",
-	Long: `Loads the configuration from config.toml and displays it in a formatted
-JSON structure. This command is useful for validating that your configuration
-is properly loaded and structured.`,
+	Short: "Validate and display configuration",
+	Long: `Loads the mux-session configuration file and displays it in a formatted
+JSON structure. This command validates that your configuration is properly
+parsed and shows the current settings including search paths and project
+configurations.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := conf.Load(configFile)
 		if err != nil {

@@ -16,13 +16,13 @@ var configFile string
 
 var rootCmd = &cobra.Command{
 	Use:   "mux-session",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "Interactive tmux session manager",
+	Long: `mux-session is an interactive tmux session manager that allows you to quickly
+navigate to project directories and create or switch to tmux sessions.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+It provides an fzf-powered interface for selecting directories from configured
+search paths and automatically creates or attaches to tmux sessions with the
+directory name as the session name.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := conf.Load(configFile)
 		if err != nil {
@@ -84,5 +84,5 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.Flags().BoolP("toggle", "t", false, "Toggle flag for testing")
 }
