@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/cucumber/godog"
+	"github.com/stretchr/testify/assert"
 )
 
 type testContext struct {
@@ -23,8 +24,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	})
 
 	ctx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
-		executeTmuxCommand("tmux", "kill-server")
-
+		executeTmuxCommand("tmux", "kill-server")(ctx)
 		return ctx, nil
 	})
 
@@ -45,14 +45,27 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(`^I build the mux-session$`, executeCommandStep("go", "build", "../"))
 	ctx.Step(`^I run mux-session with help flag$`, executeCommandStep("mux-session", "--help"))
 
+	ctx.Step(`^I expect following Sessions:$`, func(ctx context.Context, docString *godog.DocString) error {
+		testCtx := ctx.Value("testCtx").(*testContext)
+		if err := executeTmuxCommand("tmux", "list-sessions")(ctx); err != nil {
+			return err
+		}
+
+		expected_sessions := strings.Split(docString.Content, "\n")
+		for _, expected_session := range expected_sessions {
+			assert.Contains(godog.T(ctx), testCtx.lastOutput, expected_session)
+		}
+
+		return nil
+	})
+
 	ctx.Step(`^I expect following sessions:$`, func(ctx context.Context) error {
 		testCtx := ctx.Value("testCtx").(*testContext)
 		if err := executeTmuxCommand("tmux", "list-sessions")(ctx); err != nil {
 			return err
 		}
 
-		log.Println("get docString")
-		log.Println(testCtx.lastOutput)
+		log.Printf("Actual sessions: %s", testCtx.lastOutput)
 		return nil
 	})
 

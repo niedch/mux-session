@@ -12,6 +12,6 @@ Feature: Mux Session functionality
     Given a new tmux server
     Then I expect following Sessions:
     """
-    doc string test
+    test-session
     """
     
