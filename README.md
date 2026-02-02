@@ -189,3 +189,9 @@ make test
 make e2e
 ```
 
+## TODOs
+
+- [x] Environment Variables support
+- [ ] Tmux existing sessions
+- [ ] Display Project info in side panel
+
