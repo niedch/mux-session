@@ -182,7 +182,7 @@ func (m model) View() string {
 		}
 	}
 
-	linesRendered := 0
+	var renderedItems []string
 	for i := start; i < end; i++ {
 		if i < 0 || i >= len(m.filtered) {
 			continue
@@ -194,17 +194,16 @@ func (m model) View() string {
 			cursor = "> "
 			style = style.Bold(true)
 		}
-		s.WriteString(fmt.Sprintf("%s%s\n", cursor, style.Render(it.text)))
-		linesRendered++
+		renderedItems = append(renderedItems, fmt.Sprintf("%s%s\n", cursor, style.Render(it.text)))
 	}
 
-	// Fill remaining empty lines to push the input to the bottom
-	padding := listHeight - linesRendered
+	// Fill remaining empty lines to push the list to the bottom
+	padding := listHeight - len(renderedItems)
 	if padding > 0 {
-		for i := 0; i < padding; i++ {
-			s.WriteString("\n")
-		}
+		s.WriteString(strings.Repeat("\n", padding))
 	}
+
+	s.WriteString(strings.Join(renderedItems, ""))
 
 	// Render search input and help at the bottom
 	s.WriteString("Search: " + m.textInput.View() + "\n")
