@@ -12,7 +12,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var configFile string
+var (
+	configFile string
+	socket     string
+)
 
 var rootCmd = &cobra.Command{
 	Use:   "mux-session",
@@ -30,7 +33,7 @@ directory name as the session name.`,
 			return
 		}
 
-		tmux, err := tmux.NewTmux()
+		tmux, err := tmux.NewTmux(socket)
 		if err != nil {
 			log.Fatal(err)
 			return
@@ -86,6 +89,7 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.Flags().StringVarP(&configFile, "file", "f", "", "Path to config file (default is XDG_CONFIG/mux-session/config.toml)")
+	rootCmd.Flags().StringVarP(&socket, "socket", "L", "", "tmux socket name for targeting a specific server")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.

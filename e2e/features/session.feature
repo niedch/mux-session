@@ -3,8 +3,10 @@ Feature: Mux Session functionality
   I want to manage my terminal sessions
   So that I can work efficiently
 
-  Scenario: Basic Help view
+  Background:
     Given I build the mux-session
+
+  Scenario: Basic Help view
     When I run mux-session with help flag
     Then I should see help output
   
@@ -14,4 +16,10 @@ Feature: Mux Session functionality
     """
     test-session
     """
-    
+
+  Scenario: Basic session creation with When step
+    Given a new tmux server
+    Then I expect following Sessions:
+    """
+    test-session
+    """
