@@ -23,8 +23,9 @@ type WindowConfig struct {
 }
 
 type ProjectConfig struct {
-	Name         *string        `koanf:"name"`
-	WindowConfig []WindowConfig `koanf:"window"`
+	Name         *string           `koanf:"name"`
+	WindowConfig []WindowConfig    `koanf:"window"`
+	Env          map[string]string `koanf:"env"`
 }
 
 type Config struct {

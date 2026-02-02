@@ -20,6 +20,9 @@ opencode .
 
 [[project]]
 name = "mux-session"
+[project.env]
+  GOOS = "linux"
+  GOARCH = "amd64"
 
 [[project.window]]
 window_name = "nvim"
