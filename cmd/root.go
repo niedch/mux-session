@@ -3,10 +3,10 @@ package cmd
 import (
 	"log"
 	"os"
-	"path/filepath"
 	"slices"
 
 	"github.com/niedch/mux-session/internal/conf"
+	"github.com/niedch/mux-session/internal/dataproviders"
 	"github.com/niedch/mux-session/internal/fzf"
 	"github.com/niedch/mux-session/internal/tmux"
 	"github.com/spf13/cobra"
@@ -36,14 +36,20 @@ directory name as the session name.`,
 			return
 		}
 
-		provider := fzf.NewDirectoryProvider(config.SearchPaths)
-		selected, err := fzf.StartApp(provider)
+		provider := dataproviders.NewDirectoryProvider(config.SearchPaths)
+		tmuxProvider := dataproviders.NewTmuxProvider(tmux)
+
+		selected, err := fzf.StartApp(dataproviders.NewComposeProvider(provider, tmuxProvider))
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		dir_name := filepath.Base(selected)
-		projectConfig := config.GetProjectConfig(dir_name)
+		if selected == nil {
+			log.Println("No selection done")
+			return 
+		}
+
+		projectConfig := config.GetProjectConfig(selected.Id)
 
 		sessions, err := tmux.ListSessions()
 		if err != nil {
@@ -51,8 +57,8 @@ directory name as the session name.`,
 			return
 		}
 
-		if slices.Contains(sessions, dir_name) {
-			if err := tmux.SwitchSession(dir_name); err != nil {
+		if slices.Contains(sessions, selected.Id) {
+			if err := tmux.SwitchSession(selected.Id); err != nil {
 				log.Fatal(err)
 				return
 			}
@@ -60,7 +66,7 @@ directory name as the session name.`,
 			return
 		}
 
-		if err := tmux.CreateSession(selected, projectConfig); err != nil {
+		if err := tmux.CreateSession(selected.Display, projectConfig); err != nil {
 			log.Fatal(err)
 			return
 		}
