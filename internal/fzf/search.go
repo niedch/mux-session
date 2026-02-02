@@ -151,14 +151,13 @@ func filterItems(items []string, query string) []item {
 }
 
 func (m model) View() string {
-	// Calculate height available for list
-	// - 1 line for "Search: ..."
-	// - 1 line for help
-	// - 1 line for spacing/margin if desired
 	// If height is not set (e.g. init), default to 10
 	listHeight := 10
 	if m.height > 0 {
-		listHeight = m.height - 4 // Search line + Help + minimal padding
+		// listHeight is the space for the list AND the empty lines below it.
+		// -1 for search input
+		// -1 for help text
+		listHeight = m.height - 2
 		if listHeight < 1 {
 			listHeight = 1
 		}
@@ -166,7 +165,7 @@ func (m model) View() string {
 
 	var s strings.Builder
 
-	// Render list first
+	// Render list
 	start := 0
 	end := len(m.filtered)
 
@@ -183,6 +182,7 @@ func (m model) View() string {
 		}
 	}
 
+	linesRendered := 0
 	for i := start; i < end; i++ {
 		if i < 0 || i >= len(m.filtered) {
 			continue
@@ -195,20 +195,18 @@ func (m model) View() string {
 			style = style.Bold(true)
 		}
 		s.WriteString(fmt.Sprintf("%s%s\n", cursor, style.Render(it.text)))
+		linesRendered++
 	}
 
-	// Fill remaining empty lines if list is short, to keep input at bottom
-	linesRendered := end - start
-	if linesRendered < listHeight {
-		for i := 0; i < listHeight-linesRendered; i++ {
+	// Fill remaining empty lines to push the input to the bottom
+	padding := listHeight - linesRendered
+	if padding > 0 {
+		for i := 0; i < padding; i++ {
 			s.WriteString("\n")
 		}
 	}
 
-	// Add spacing
-	s.WriteString("\n")
-
-	// Render search input at the bottom
+	// Render search input and help at the bottom
 	s.WriteString("Search: " + m.textInput.View() + "\n")
 	s.WriteString(m.help.View(m.keymap))
 	return s.String()
