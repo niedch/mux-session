@@ -30,8 +30,9 @@ func StartApp(dataProvider DataProvider) (string, error) {
 }
 
 type item struct {
-	text  string
-	index int
+	text    string
+	index   int
+	matches []int
 }
 
 type model struct {
@@ -143,23 +144,25 @@ func (m *model) updateFiltered() {
 }
 
 func filterItems(items []string, query string) []item {
-	var matches []item
+	var result []item
 	q := []rune(strings.ToLower(query))
 
 	for i, t := range items {
 		target := []rune(strings.ToLower(t))
 		qi, ti := 0, 0
+		matches := make([]int, 0, len(q))
 		for qi < len(q) && ti < len(target) {
 			if q[qi] == target[ti] {
+				matches = append(matches, ti)
 				qi++
 			}
 			ti++
 		}
 		if qi == len(q) {
-			matches = append(matches, item{text: t, index: i})
+			result = append(result, item{text: t, index: i, matches: matches})
 		}
 	}
-	return matches
+	return result
 }
 
 func (m model) View() string {
@@ -206,7 +209,24 @@ func (m model) View() string {
 			cursor = "> "
 			style = style.Bold(true)
 		}
-		renderedItems = append(renderedItems, fmt.Sprintf("%s%s\n", cursor, style.Render(it.text)))
+
+		var highlightedText strings.Builder
+		matchStyle := style.Copy().Bold(true)
+
+		matchMap := make(map[int]struct{})
+		for _, idx := range it.matches {
+			matchMap[idx] = struct{}{}
+		}
+
+		for i, r := range it.text {
+			if _, ok := matchMap[i]; ok {
+				highlightedText.WriteString(matchStyle.Render(string(r)))
+			} else {
+				highlightedText.WriteString(style.Render(string(r)))
+			}
+		}
+
+		renderedItems = append(renderedItems, fmt.Sprintf("%s%s\n", cursor, highlightedText.String()))
 	}
 
 	// Fill remaining empty lines to push the list to the bottom
