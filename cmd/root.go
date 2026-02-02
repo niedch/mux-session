@@ -37,13 +37,12 @@ directory name as the session name.`,
 		}
 
 		provider := fzf.NewDirectoryProvider(config.SearchPaths)
-		dir, err := fzf.StartFzf(provider)
+		selected, err := fzf.StartApp(provider)
 		if err != nil {
 			log.Fatal(err)
-			return
 		}
 
-		dir_name := filepath.Base(*dir)
+		dir_name := filepath.Base(selected)
 		projectConfig := config.GetProjectConfig(dir_name)
 
 		sessions, err := tmux.ListSessions()
@@ -61,7 +60,7 @@ directory name as the session name.`,
 			return
 		}
 
-		if err := tmux.CreateSession(*dir, projectConfig); err != nil {
+		if err := tmux.CreateSession(selected, projectConfig); err != nil {
 			log.Fatal(err)
 			return
 		}
