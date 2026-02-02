@@ -62,6 +62,11 @@ func (k keymap) FullHelp() [][]key.Binding {
 }
 
 func initialModel(items []string) model {
+	// reverse items
+	for i, j := 0, len(items)-1; i < j; i, j = i+1, j-1 {
+		items[i], items[j] = items[j], items[i]
+	}
+
 	ti := textinput.New()
 	ti.Placeholder = "search..."
 	ti.Focus()
@@ -79,6 +84,9 @@ func initialModel(items []string) model {
 		keymap:    km,
 	}
 	m.updateFiltered()
+	if len(m.filtered) > 0 {
+		m.cursor = len(m.filtered) - 1
+	}
 	return m
 }
 
@@ -119,7 +127,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.textInput, cmd = m.textInput.Update(msg)
 	if m.textInput.Value() != oldValue {
 		m.updateFiltered()
-		m.cursor = 0
+		if len(m.filtered) > 0 {
+			m.cursor = len(m.filtered) - 1
+		} else {
+			m.cursor = 0
+		}
 	}
 
 	return m, cmd
