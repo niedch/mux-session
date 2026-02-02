@@ -7,6 +7,7 @@ An interactive tmux session manager that allows you to quickly navigate to proje
 - **Interactive Directory Selection**: Uses fzf for fast directory navigation from configured search paths
 - **Automatic Session Management**: Creates new tmux sessions or switches to existing ones
 - **Project-Specific Configuration**: Define custom window layouts and commands per project
+- **Environment Variables**: Set project-specific environment variables
 - **Default Window Templates**: Set up default window configurations for all projects
 - **XDG Config Support**: Follows XDG Base Directory specification for configuration
 
@@ -116,6 +117,7 @@ Defines window templates that apply to all projects unless overridden.
 
 #### Project Section `[[project]]`
 - `name`: Project name (must match directory name)
+- `env`: A map of environment variables to set for the session.
 
 #### Window Section `[[project.window]]` or `[[default.window]]`
 - `window_name`: Name of the tmux window

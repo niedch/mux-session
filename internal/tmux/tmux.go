@@ -85,6 +85,12 @@ func (t *Tmux) CreateSession(dir_path string, projectConfig conf.ProjectConfig) 
 		return fmt.Errorf("failed to create session '%s': %w", sessionName, err)
 	}
 
+	for key, value := range projectConfig.Env {
+		if err := exec.Command("tmux", "set-environment", "-t", sessionName, key, value).Run(); err != nil {
+			return fmt.Errorf("failed to set environment variable '%s' for session '%s': %w", key, sessionName, err)
+		}
+	}
+
 	// Setup panels for first window if configured
 	if len(firstWindow.PanelConfig) > 0 {
 		if err := t.setupPanels(sessionName, firstWindow.WindowName, dir_path, firstWindow.PanelConfig); err != nil {

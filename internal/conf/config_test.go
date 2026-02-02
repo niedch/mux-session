@@ -58,6 +58,29 @@ func TestGetProjectConfig(t *testing.T) {
 				Name: stringPtr("default-project"),
 			},
 		},
+		{
+			name: "returns project with env vars when found",
+			config: &Config{
+				Default: ProjectConfig{
+					Name: stringPtr("default-project"),
+				},
+				Project: []ProjectConfig{
+					{
+						Name: stringPtr("test-project"),
+						Env: map[string]string{
+							"TEST_VAR": "test_value",
+						},
+					},
+				},
+			},
+			dir: "test-project",
+			expected: ProjectConfig{
+				Name: stringPtr("test-project"),
+				Env: map[string]string{
+					"TEST_VAR": "test_value",
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -70,6 +93,15 @@ func TestGetProjectConfig(t *testing.T) {
 				t.Errorf("Expected Name to be nil, but got %s", *result.Name)
 			} else if result.Name != nil && tt.expected.Name != nil && *result.Name != *tt.expected.Name {
 				t.Errorf("Expected Name to be %s, but got %s", *tt.expected.Name, *result.Name)
+			}
+
+			if len(result.Env) != len(tt.expected.Env) {
+				t.Errorf("Expected %d env vars, but got %d", len(tt.expected.Env), len(result.Env))
+			}
+			for key, value := range tt.expected.Env {
+				if result.Env[key] != value {
+					t.Errorf("Expected env var %s to be %s, but got %s", key, value, result.Env[key])
+				}
 			}
 		})
 	}

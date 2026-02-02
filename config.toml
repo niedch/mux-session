@@ -21,6 +21,9 @@ opencode .
 [[project]]
 name = "mux-session"
 
+[project.env]
+MUX-SESSION_TEST = "mux-tester"
+
 [[project.window]]
 window_name = "nvim"
 cmd = "vim ."
