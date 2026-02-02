@@ -145,91 +145,54 @@ func (m *model) updateFiltered() {
 
 func filterItems(items []string, query string) []item {
 	var result []item
-	q := []rune(strings.ToLower(query))
+	queryRunes := []rune(strings.ToLower(query))
 
-	for i, t := range items {
-		target := []rune(strings.ToLower(t))
-		qi, ti := 0, 0
-		matches := make([]int, 0, len(q))
-		for qi < len(q) && ti < len(target) {
-			if q[qi] == target[ti] {
-				matches = append(matches, ti)
-				qi++
+	for i, itemText := range items {
+		targetRunes := []rune(strings.ToLower(itemText))
+		queryIndex, targetIndex := 0, 0
+		matches := make([]int, 0, len(queryRunes))
+
+		for queryIndex < len(queryRunes) && targetIndex < len(targetRunes) {
+			if queryRunes[queryIndex] == targetRunes[targetIndex] {
+				matches = append(matches, targetIndex)
+				queryIndex++
 			}
-			ti++
+			targetIndex++
 		}
-		if qi == len(q) {
-			result = append(result, item{text: t, index: i, matches: matches})
+
+		if queryIndex == len(queryRunes) {
+			result = append(result, item{text: itemText, index: i, matches: matches})
 		}
 	}
 	return result
 }
 
+const (
+	inputHeight = 1
+	helpHeight  = 1
+)
+
 func (m model) View() string {
-	// If height is not set (e.g. init), default to 10
-	listHeight := 10
-	if m.height > 0 {
-		// listHeight is the space for the list AND the empty lines below it.
-		// -1 for search input
-		// -1 for help text
-		listHeight = m.height - 2
-		if listHeight < 1 {
-			listHeight = 1
-		}
+	// If height is not set (e.g. init), default to a reasonable value.
+	if m.height == 0 {
+		m.height = 10
+	}
+
+	listHeight := m.height - inputHeight - helpHeight
+	if listHeight < 1 {
+		listHeight = 1
+	}
+
+	start, end := m.calculateVisibleRange(listHeight)
+
+	var renderedItems []string
+	for i := start; i < end; i++ {
+		renderedItems = append(renderedItems, m.renderItem(i))
 	}
 
 	var s strings.Builder
 
-	// Render list
-	start := 0
-	end := len(m.filtered)
-
-	if len(m.filtered) > listHeight {
-		if m.cursor < listHeight/2 {
-			start = 0
-			end = listHeight
-		} else if m.cursor > len(m.filtered)-listHeight/2 {
-			start = len(m.filtered) - listHeight
-			end = len(m.filtered)
-		} else {
-			start = m.cursor - listHeight/2
-			end = m.cursor + listHeight/2
-		}
-	}
-
-	var renderedItems []string
-	for i := start; i < end; i++ {
-		if i < 0 || i >= len(m.filtered) {
-			continue
-		}
-		it := m.filtered[i]
-		cursor := "  "
-		style := lipgloss.NewStyle()
-		if i == m.cursor {
-			cursor = "> "
-			style = style.Bold(true)
-		}
-
-		var highlightedText strings.Builder
-		matchStyle := style.Copy().Bold(true)
-
-		matchMap := make(map[int]struct{})
-		for _, idx := range it.matches {
-			matchMap[idx] = struct{}{}
-		}
-
-		for i, r := range it.text {
-			if _, ok := matchMap[i]; ok {
-				highlightedText.WriteString(matchStyle.Render(string(r)))
-			} else {
-				highlightedText.WriteString(style.Render(string(r)))
-			}
-		}
-
-		renderedItems = append(renderedItems, fmt.Sprintf("%s%s\n", cursor, highlightedText.String()))
-	}
-
-	// Fill remaining empty lines to push the list to the bottom
+	// Fill remaining empty lines to push the list to the bottom.
 	padding := listHeight - len(renderedItems)
 	if padding > 0 {
 		s.WriteString(strings.Repeat("\n", padding))
@@ -237,8 +200,65 @@ func (m model) View() string {
 
 	s.WriteString(strings.Join(renderedItems, ""))
 
-	// Render search input and help at the bottom
+	// Render search input and help at the bottom.
 	s.WriteString("Search: " + m.textInput.View() + "\n")
 	s.WriteString(m.help.View(m.keymap))
 	return s.String()
+}
+
+// calculateVisibleRange determines the start and end indices of the items to be displayed.
+func (m model) calculateVisibleRange(listHeight int) (int, int) {
+	if len(m.filtered) <= listHeight {
+		return 0, len(m.filtered)
+	}
+
+	// When cursor is near the top.
+	if m.cursor < listHeight/2 {
+		return 0, listHeight
+	}
+
+	// When cursor is near the bottom.
+	if m.cursor > len(m.filtered)-listHeight/2 {
+		return len(m.filtered) - listHeight, len(m.filtered)
+	}
+
+	// When cursor is in the middle.
+	start := m.cursor - listHeight/2
+	end := m.cursor + listHeight/2
+	return start, end
+}
+
+// renderItem renders a single item in the list.
+func (m model) renderItem(i int) string {
+	if i < 0 || i >= len(m.filtered) {
+		return ""
+	}
+
+	it := m.filtered[i]
+	isSelected := i == m.cursor
+
+	cursor := "  "
+	style := lipgloss.NewStyle()
+	if isSelected {
+		cursor = "> "
+		style = style.Bold(true)
+	}
+
+	var highlightedText strings.Builder
+	matchStyle := style.Copy().Bold(true)
+
+	matchMap := make(map[int]struct{})
+	for _, idx := range it.matches {
+		matchMap[idx] = struct{}{}
+	}
+
+	for i, r := range it.text {
+		if _, ok := matchMap[i]; ok {
+			highlightedText.WriteString(matchStyle.Render(string(r)))
+		} else {
+			highlightedText.WriteString(style.Render(string(r)))
+		}
+	}
+
+	return fmt.Sprintf("%s%s\n", cursor, highlightedText.String())
 }
