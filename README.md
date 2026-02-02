@@ -192,6 +192,8 @@ make e2e
 ## TODOs
 
 - [x] Environment Variables support
-- [ ] Tmux existing sessions
+- [x] Tmux existing sessions
+- [ ] Full e2e tests
+- [ ] Worktree support
 - [ ] Display Project info in side panel
 
