@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -19,7 +20,9 @@ type testContext struct {
 	tmuxSessionName string
 	ptyConsole      *PtyConsole
 	testDirs        []string
+	baseDir         string
 	configPath      string
+	cmd             *exec.Cmd
 }
 
 func InitializeScenario(ctx *godog.ScenarioContext) {
@@ -38,6 +41,16 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 			log.Printf("Failed to remove socket file %s: %v", socketPath, err)
 		}
 
+		if testCtx.ptyConsole != nil {
+			testCtx.ptyConsole.Close()
+		}
+
+		// Clean up test directories
+		if len(testCtx.testDirs) > 0 {
+			baseDir := filepath.Dir(testCtx.testDirs[0])
+			os.RemoveAll(baseDir)
+		}
+
 		return ctx, nil
 	})
 
@@ -54,11 +67,10 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 	})
 
 	ctx.Step(`^I run list-sessions$`, executeTmuxCommand("tmux", "list-sessions"))
+	ctx.Step(`^I run mux-session with help flag$`, executeCommandStep("mux-session", "--help"))
 
-	ctx.Step(`^I build the mux-session$`, executeCommandStep("go", "build", "../"))
-	ctx.Step(`^I run mux-session with help flag$`, executeCommandStep("./mux-session", "--help"))
 
-	ctx.Step(`^I expect following Sessions:$`, func(ctx context.Context, docString *godog.DocString) error {
+	ctx.Step(`^I expect following sessions:$`, func(ctx context.Context, docString *godog.DocString) error {
 		testCtx := ctx.Value("testCtx").(*testContext)
 		if err := executeTmuxCommand("tmux", "list-sessions")(ctx); err != nil {
 			return err
@@ -68,16 +80,6 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 			assert.Contains(godog.T(ctx), testCtx.lastOutput, expected_session)
 		}
 
-		return nil
-	})
-
-	ctx.Step(`^I expect following sessions:$`, func(ctx context.Context) error {
-		testCtx := ctx.Value("testCtx").(*testContext)
-		if err := executeTmuxCommand("tmux", "list-sessions")(ctx); err != nil {
-			return err
-		}
-
-		log.Printf("Actual sessions: %s", testCtx.lastOutput)
 		return nil
 	})
 
@@ -91,7 +93,6 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		return nil
 	})
 
-	// TUI test steps
 	ctx.Step(`^test directories exist:$`, func(ctx context.Context, table *godog.Table) error {
 		testCtx := ctx.Value("testCtx").(*testContext)
 
@@ -102,27 +103,25 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		}
 
 		// Create subdirectories from table
-		for _, row := range table.Rows[1:] { // Skip header
+		for _, row := range table.Rows[0:] {
 			dirName := row.Cells[0].Value
 			dirPath := filepath.Join(baseDir, dirName)
 			if err := os.MkdirAll(dirPath, 0755); err != nil {
 				return fmt.Errorf("failed to create test dir %s: %w", dirName, err)
 			}
-			testCtx.testDirs = append(testCtx.testDirs, dirPath)
 		}
+
+		testCtx.baseDir = baseDir
 
 		return nil
 	})
 
-	ctx.Step(`^I spawn mux-session with socket "([^"]*)" using config:$`, func(ctx context.Context, socket string, docString *godog.DocString) error {
+	ctx.Step(`^I spawn mux-session using config:$`, func(ctx context.Context, docString *godog.DocString) error {
 		testCtx := ctx.Value("testCtx").(*testContext)
 
 		// Resolve template variables
 		configContent := docString.Content
-		if len(testCtx.testDirs) > 0 {
-			testDir := filepath.Dir(testCtx.testDirs[0])
-			configContent = strings.ReplaceAll(configContent, "{{TEST_DIR}}", testDir)
-		}
+		configContent = strings.ReplaceAll(configContent, "{{BASE_DIR}}", testCtx.baseDir)
 
 		// Create temp config file with resolved content
 		tmpFile, err := os.CreateTemp("", "mux-session-config-*.toml")
@@ -134,7 +133,6 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		if _, err := tmpFile.WriteString(configContent); err != nil {
 			return fmt.Errorf("failed to write config content: %w", err)
 		}
-
 		testCtx.configPath = tmpFile.Name()
 
 		// Create PTY console
@@ -142,32 +140,28 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		if err != nil {
 			return fmt.Errorf("failed to create PTY console: %w", err)
 		}
+		WithBinaryPath("../mux-session")(ptyConsole)
 		testCtx.ptyConsole = ptyConsole
 
 		// Spawn mux-session with socket
-		if err := ptyConsole.Spawn(socket, testCtx.configPath); err != nil {
+		if err := ptyConsole.Spawn(testCtx.tmuxSessionName, testCtx.configPath); err != nil {
 			return fmt.Errorf("failed to spawn mux-session: %w", err)
 		}
 
-		// Wait for fzf to appear and render
-		time.Sleep(1 * time.Second)
-
-		// Send a "wakeup" keystroke to activate the terminal input
-		// This is a workaround for bubbletea issue #1116 where first keypress is ignored
 		if err := ptyConsole.SendString(" "); err != nil {
 			return fmt.Errorf("failed to send wakeup keystroke: %w", err)
 		}
-		time.Sleep(100 * time.Millisecond)
-		// Send backspace to remove the space
+
 		if err := ptyConsole.Send([]byte{0x7f}); err != nil {
 			return fmt.Errorf("failed to send backspace: %w", err)
 		}
+
 		time.Sleep(100 * time.Millisecond)
 
 		return nil
 	})
 
-	ctx.Step(`^I type "([^"]*)" in fzf$`, func(ctx context.Context, query string) error {
+	ctx.Step(`^I select "([^"]*)"$`, func(ctx context.Context, query string) error {
 		testCtx := ctx.Value("testCtx").(*testContext)
 		if testCtx.ptyConsole == nil {
 			return fmt.Errorf("PTY console not initialized")
@@ -177,8 +171,14 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 			return err
 		}
 
-		// Small delay to let fzf process the input
-		time.Sleep(200 * time.Millisecond)
+		if err := testCtx.ptyConsole.SendEnter(); err != nil {
+			return err
+		}
+
+		if err := testCtx.ptyConsole.Wait(); err != nil {
+			return err
+		}
+
 		return nil
 	})
 
@@ -271,49 +271,13 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 
 		// Verify all expected windows exist
 		for _, expected := range expectedWindows {
-			found := false
-			for _, actual := range actualWindows {
-				if actual == expected {
-					found = true
-					break
-				}
-			}
+			found := slices.Contains(actualWindows, expected)
 			if !found {
 				return fmt.Errorf("expected window %q not found in session %s. Actual windows: %v", expected, sessionName, actualWindows)
 			}
 		}
 
 		return nil
-	})
-
-	ctx.Step(`^no tmux session should exist on socket "([^"]*)"$`, func(ctx context.Context, socket string) error {
-		// Wait a moment
-		time.Sleep(200 * time.Millisecond)
-
-		// Try to list sessions - should fail if none exist
-		_, err := executeCommand("tmux", "-L", socket, "list-sessions")
-		if err == nil {
-			return fmt.Errorf("expected no sessions but some exist")
-		}
-
-		return nil
-	})
-
-	// Cleanup PTY console
-	ctx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
-		testCtx := ctx.Value("testCtx").(*testContext)
-
-		if testCtx.ptyConsole != nil {
-			testCtx.ptyConsole.Close()
-		}
-
-		// Clean up test directories
-		if len(testCtx.testDirs) > 0 {
-			baseDir := filepath.Dir(testCtx.testDirs[0])
-			os.RemoveAll(baseDir)
-		}
-
-		return ctx, nil
 	})
 }
 

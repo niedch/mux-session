@@ -12,14 +12,7 @@ Feature: Mux Session functionality
   
   Scenario: Basic session creation
     Given a new tmux server
-    Then I expect following Sessions:
-    """
-    test-session
-    """
-
-  Scenario: Basic session creation with When step
-    Given a new tmux server
-    Then I expect following Sessions:
+    Then I expect following sessions:
     """
     test-session
     """
