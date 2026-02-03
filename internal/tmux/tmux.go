@@ -27,17 +27,16 @@ func (t *Tmux) commandOpts() []OptFunc {
 	return nil
 }
 
-func (t *Tmux) SetEnvironment(env map[string]string) error {
-	opts := append(t.commandOpts(),
-		WithTarget(t.socket),
-	)
-
+func (t *Tmux) SetEnvironment(target string, env map[string]string) error {
 	for k, v := range env {
-		opts = append(opts, WithArgs(k, v))
-	}
+		opts := append(t.commandOpts(),
+			WithTarget(target),
+			WithArgs(k, v),
+		)
 
-	if err := SetEnvironment(opts...); err != nil {
-		return fmt.Errorf("failed to set environment variables for session '%s': %w", t.socket, err)
+		if err := SetEnvironment(opts...); err != nil {
+			return fmt.Errorf("failed to set environment variable %s for session '%s': %w", k, target, err)
+		}
 	}
 
 	return nil
@@ -100,7 +99,7 @@ func (t *Tmux) CreateSession(dirPath string, projectConfig conf.ProjectConfig) e
 	}
 
 	if len(projectConfig.Env) > 0 {
-		if err := t.SetEnvironment(projectConfig.Env); err != nil {
+		if err := t.SetEnvironment(sessionName, projectConfig.Env); err != nil {
 			return fmt.Errorf("failed to set environment %s: %w", sessionName, err)
 		}
 	}

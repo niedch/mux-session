@@ -49,7 +49,7 @@ directory name as the session name.`,
 
 		if selected == nil {
 			log.Println("No selection done")
-			return 
+			return
 		}
 
 		projectConfig := config.GetProjectConfig(selected.Id)
