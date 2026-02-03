@@ -9,24 +9,26 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/niedch/mux-session/internal/dataproviders"
 )
 
-func StartApp(dataProvider DataProvider) (string, error) {
+func StartApp(dataProvider dataproviders.DataProvider) (*dataproviders.Item, error) {
 	items, err := dataProvider.GetItems()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	p := tea.NewProgram(initialModel(items), tea.WithAltScreen())
 	m, err := p.Run()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if model, ok := m.(model); ok {
 		return model.selected, nil
 	}
-	return "", nil
+
+	return nil, nil
 }
 
 type item struct {
@@ -39,10 +41,10 @@ type model struct {
 	textInput textinput.Model
 	help      help.Model
 	keymap    keymap
-	items     []string
+	items     []dataproviders.Item
 	filtered  []item
 	cursor    int
-	selected  string
+	selected  *dataproviders.Item
 	width     int
 	height    int
 }
@@ -62,7 +64,7 @@ func (k keymap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{k.ShortHelp()}
 }
 
-func initialModel(items []string) model {
+func initialModel(items []dataproviders.Item) model {
 	// reverse items
 	for i, j := 0, len(items)-1; i < j; i, j = i+1, j-1 {
 		items[i], items[j] = items[j], items[i]
@@ -103,7 +105,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "enter":
 			if len(m.filtered) > 0 {
-				m.selected = m.filtered[m.cursor].text
+				m.selected = &m.items[m.filtered[m.cursor].index]
 			}
 			return m, tea.Quit
 		case "up", "ctrl+p":
@@ -143,11 +145,12 @@ func (m *model) updateFiltered() {
 	m.filtered = filterItems(m.items, query)
 }
 
-func filterItems(items []string, query string) []item {
+func filterItems(items []dataproviders.Item, query string) []item {
 	var result []item
 	queryRunes := []rune(strings.ToLower(query))
 
-	for i, itemText := range items {
+	for i, dpItem := range items {
+		itemText := dpItem.Display
 		targetRunes := []rune(strings.ToLower(itemText))
 		queryIndex, targetIndex := 0, 0
 		matches := make([]int, 0, len(queryRunes))
