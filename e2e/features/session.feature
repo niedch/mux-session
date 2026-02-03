@@ -9,10 +9,26 @@ Feature: Mux Session functionality
   Scenario: Basic Help view
     When I run mux-session with help flag
     Then I should see help output
-  
+
   Scenario: Basic session creation
     Given a new tmux server
     Then I expect following sessions:
     """
     test-session
     """
+
+  Scenario: List sessions shows directories from search path
+    Given I have the following directories:
+      | name          |
+      | project-one   |
+      | project-two   |
+      | project-three |
+    When I run mux-session list-sessions with config:
+      """
+      search_paths = ["<search_path>"]
+      """
+    Then I should see the following directories in output:
+      | name          |
+      | project-one   |
+      | project-two   |
+      | project-three |

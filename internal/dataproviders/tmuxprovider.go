@@ -21,16 +21,16 @@ func (dp *TmuxProvider) GetItems() ([]Item, error) {
 	var items []Item
 	sessions, err := dp.tmux.ListSessions()
 	if err != nil {
-		return nil, err
+		// Return empty list if no tmux server is running
+		return items, nil
 	}
-	
+
 	for _, session := range sessions {
 		items = append(items, Item{
-			Id: session,
+			Id:      session,
 			Display: "[TMUX] " + session,
 		})
 	}
-
 
 	return items, nil
 }

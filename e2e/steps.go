@@ -16,6 +16,8 @@ import (
 type testContext struct {
 	lastOutput      string
 	tmuxSessionName string
+	tempDir         string
+	tempConfigFile  string
 }
 
 func InitializeScenario(ctx *godog.ScenarioContext) {
@@ -32,6 +34,18 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		socketPath := filepath.Join("/tmp", "tmux-1000", testCtx.tmuxSessionName)
 		if err := os.Remove(socketPath); err != nil && !os.IsNotExist(err) {
 			log.Printf("Failed to remove socket file %s: %v", socketPath, err)
+		}
+
+		if testCtx.tempConfigFile != "" {
+			if err := os.Remove(testCtx.tempConfigFile); err != nil && !os.IsNotExist(err) {
+				log.Printf("Failed to remove temp config file %s: %v", testCtx.tempConfigFile, err)
+			}
+		}
+
+		if testCtx.tempDir != "" {
+			if err := os.RemoveAll(testCtx.tempDir); err != nil {
+				log.Printf("Failed to remove temp directory %s: %v", testCtx.tempDir, err)
+			}
 		}
 
 		return ctx, nil
@@ -73,6 +87,66 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		}
 
 		fmt.Printf("Verifying output: %s\n", testCtx.lastOutput) // Print for debugging
+		return nil
+	})
+
+	ctx.Step(`^I have the following directories:$`, func(ctx context.Context, table *godog.Table) error {
+		testCtx := ctx.Value("testCtx").(*testContext)
+
+		tempDir, err := os.MkdirTemp("", fmt.Sprintf("mux-session-test-%s-*", testCtx.tmuxSessionName))
+		if err != nil {
+			return fmt.Errorf("failed to create temp directory: %v", err)
+		}
+		testCtx.tempDir = tempDir
+
+		for _, row := range table.Rows[1:] {
+			dirName := row.Cells[0].Value
+			dirPath := filepath.Join(tempDir, dirName)
+			if err := os.MkdirAll(dirPath, 0755); err != nil {
+				return fmt.Errorf("failed to create directory %s: %v", dirPath, err)
+			}
+		}
+
+		return nil
+	})
+
+	ctx.Step(`^I run mux-session list-sessions with config:$`, func(ctx context.Context, docString *godog.DocString) error {
+		testCtx := ctx.Value("testCtx").(*testContext)
+
+		if testCtx.tempDir == "" {
+			return fmt.Errorf("no temp directory created, ensure 'I have the following directories' step is called first")
+		}
+
+		configContent := strings.ReplaceAll(docString.Content, "<search_path>", testCtx.tempDir)
+
+		tempConfigFile, err := os.CreateTemp("", fmt.Sprintf("mux-session-config-%s-*.toml", testCtx.tmuxSessionName))
+		if err != nil {
+			return fmt.Errorf("failed to create temp config file: %v", err)
+		}
+		testCtx.tempConfigFile = tempConfigFile.Name()
+
+		if _, err := tempConfigFile.WriteString(configContent); err != nil {
+			return fmt.Errorf("failed to write config content: %v", err)
+		}
+		tempConfigFile.Close()
+
+		output, err := executeCommand("./mux-session", "list-sessions", "-f", testCtx.tempConfigFile, "-L", testCtx.tmuxSessionName)
+		if err != nil {
+			return err
+		}
+
+		testCtx.lastOutput = output
+		return nil
+	})
+
+	ctx.Step(`^I should see the following directories in output:$`, func(ctx context.Context, table *godog.Table) error {
+		testCtx := ctx.Value("testCtx").(*testContext)
+
+		for _, row := range table.Rows[1:] {
+			dirName := row.Cells[0].Value
+			assert.Contains(godog.T(ctx), testCtx.lastOutput, dirName, "Expected output to contain directory: %s", dirName)
+		}
+
 		return nil
 	})
 
