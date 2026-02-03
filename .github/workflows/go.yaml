@@ -15,9 +15,6 @@ jobs:
       with:
         go-version: '1.25.5'
 
-    - name: Build
-      run: go build -v ./...
-
-    - name: Test
-      run: go test -v ./...
+    - name: Build and Test
+      run: make e2e
 
