@@ -82,7 +82,7 @@ func (m *MultiplexerService) CreateSession(dirPath string, projectConfig conf.Pr
 }
 
 func (m *MultiplexerService) SwitchSession(selected *dataproviders.Item) (bool, error) {
-	sessions, err := tmux.ListSessions()
+	sessions, err := m.tmux.ListSessions()
 	if err != nil {
 		return false, err
 	}
