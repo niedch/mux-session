@@ -95,7 +95,7 @@ func (m *MultiplexerService) SwitchSession(selected *dataproviders.Item) (bool, 
 		return true, nil
 	}
 
-	return true, nil
+	return false, nil
 }
 
 func (m *MultiplexerService) createWindowWithPanels(sessionName string, dirPath string, window conf.WindowConfig) error {

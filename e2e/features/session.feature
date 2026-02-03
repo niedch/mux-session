@@ -34,3 +34,22 @@ Feature: Mux Session functionality
       | project-two         |
       | project-three       |
       | [TMUX] test-session |
+
+  Scenario: Switch command creates new session from directory
+    Given a new tmux server
+    And I have the following directories:
+      | name       |
+      | my-project |
+    When I run mux-session switch "my-project" with config:
+      """
+      search_paths = ["<search_path>"]
+
+      [default]
+      [[default.window]]
+      window_name = "Shell"
+      """
+    Then I expect following sessions:
+      """
+      test-session
+      my-project
+      """

@@ -150,6 +150,34 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		return nil
 	})
 
+	ctx.Step(`^I run mux-session switch "([^"]*)" with config:$`, func(ctx context.Context, dirName string, docString *godog.DocString) error {
+		testCtx := ctx.Value("testCtx").(*testContext)
+
+		if testCtx.tempDir == "" {
+			return fmt.Errorf("no temp directory created, ensure 'I have the following directories' step is called first")
+		}
+
+		configContent := strings.ReplaceAll(docString.Content, "<search_path>", testCtx.tempDir)
+
+		tempConfigFile, err := os.CreateTemp("", fmt.Sprintf("mux-session-config-%s-*.toml", testCtx.tmuxSessionName))
+		if err != nil {
+			return fmt.Errorf("failed to create temp config file: %v", err)
+		}
+		testCtx.tempConfigFile = tempConfigFile.Name()
+
+		if _, err := tempConfigFile.WriteString(configContent); err != nil {
+			return fmt.Errorf("failed to write config content: %v", err)
+		}
+		tempConfigFile.Close()
+
+		_, err = executeCommand("./mux-session", "switch", dirName, "-f", testCtx.tempConfigFile, "-L", testCtx.tmuxSessionName)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
 }
 
 func executeTmuxCommand(name string, args ...string) func(ctx context.Context) error {
