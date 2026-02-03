@@ -66,9 +66,9 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		return nil
 	})
 
+	ctx.Step(`^I build the mux-session$`, executeCommandStep("go", "build", "-o", "mux-session", ".")) 
 	ctx.Step(`^I run list-sessions$`, executeTmuxCommand("tmux", "list-sessions"))
 	ctx.Step(`^I run mux-session with help flag$`, executeCommandStep("mux-session", "--help"))
-
 
 	ctx.Step(`^I expect following sessions:$`, func(ctx context.Context, docString *godog.DocString) error {
 		testCtx := ctx.Value("testCtx").(*testContext)
@@ -140,20 +140,15 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		if err != nil {
 			return fmt.Errorf("failed to create PTY console: %w", err)
 		}
-		WithBinaryPath("../mux-session")(ptyConsole)
+		WithBinaryPath("mux-session")(ptyConsole)
 		testCtx.ptyConsole = ptyConsole
 
-		// Spawn mux-session with socket
 		if err := ptyConsole.Spawn(testCtx.tmuxSessionName, testCtx.configPath); err != nil {
 			return fmt.Errorf("failed to spawn mux-session: %w", err)
 		}
 
 		if err := ptyConsole.SendString(" "); err != nil {
 			return fmt.Errorf("failed to send wakeup keystroke: %w", err)
-		}
-
-		if err := ptyConsole.Send([]byte{0x7f}); err != nil {
-			return fmt.Errorf("failed to send backspace: %w", err)
 		}
 
 		time.Sleep(100 * time.Millisecond)
@@ -171,7 +166,13 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 			return err
 		}
 
+		time.Sleep(100 * time.Millisecond)
 		if err := testCtx.ptyConsole.SendEnter(); err != nil {
+			return err
+		}
+
+		time.Sleep(100 * time.Millisecond)
+		if err := testCtx.ptyConsole.Close(); err != nil {
 			return err
 		}
 
@@ -216,10 +217,6 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		}
 
 		return testCtx.ptyConsole.SendArrowDown()
-	})
-
-	ctx.Step(`^I manually select "([^"]*)" in fzf$`, func(ctx context.Context, selection string) error {
-		return fmt.Errorf("manual interaction required: please select %q in the fzf UI", selection)
 	})
 
 	ctx.Step(`^a tmux session "([^"]*)" should exist on socket "([^"]*)"$`, func(ctx context.Context, sessionName, socket string) error {

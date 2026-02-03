@@ -97,6 +97,7 @@ func (p *PtyConsole) Send(data []byte) error {
 	if p.pty == nil {
 		return fmt.Errorf("PTY not initialized")
 	}
+
 	_, err := p.pty.Write(data)
 	return err
 }
@@ -122,12 +123,14 @@ func (p *PtyConsole) SendCtrlC() error {
 }
 
 func (p *PtyConsole) SendArrowDown() error {
-
 	return p.Send([]byte{0x1b, '[', 'B'})
 }
 
-func (p *PtyConsole) SendArrowUp() error {
+func (p *PtyConsole) SendBackSpace() error {
+	return p.Send([]byte{0x7f})
+}
 
+func (p *PtyConsole) SendArrowUp() error {
 	return p.Send([]byte{0x1b, '[', 'A'})
 }
 
@@ -140,11 +143,11 @@ func (p *PtyConsole) Wait() error {
 	case err := <-p.done:
 		return err
 	case <-time.After(3 * time.Second):
-
 		if p.cmd.Process != nil {
 			p.cmd.Process.Kill()
 		}
-		return fmt.Errorf("timeout waiting for process. Output:\n%s", p.output.String())
+
+		return fmt.Errorf("timeout waiting for process.")
 	}
 }
 
@@ -156,7 +159,6 @@ func (p *PtyConsole) ProcessState() *os.ProcessState {
 }
 
 func (p *PtyConsole) Close() error {
-
 	if p.cmd != nil && p.cmd.Process != nil {
 		p.cmd.Process.Kill()
 		select {
