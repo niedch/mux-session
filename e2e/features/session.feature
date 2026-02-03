@@ -3,9 +3,6 @@ Feature: Mux Session functionality
   I want to manage my terminal sessions
   So that I can work efficiently
 
-  Background:
-    Given I build the mux-session
-
   Scenario: Basic Help view
     When I run mux-session with help flag
     Then I should see help output
