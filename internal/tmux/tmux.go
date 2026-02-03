@@ -2,6 +2,7 @@ package tmux
 
 import (
 	"fmt"
+	"log"
 	"path/filepath"
 	"slices"
 
@@ -99,8 +100,10 @@ func (t *Tmux) CreateSession(dirPath string, projectConfig conf.ProjectConfig) e
 		return fmt.Errorf("failed to create session %s: %w", sessionName, err)
 	}
 
-	if err := t.SetEnvironment(projectConfig.Env); err != nil {
-		return err
+	if len(projectConfig.Env) > 0 {
+		if err := t.SetEnvironment(projectConfig.Env); err != nil {
+			return fmt.Errorf("failed to set environment %s: %w", sessionName, err)
+		}
 	}
 
 	// Setup panels for first window if configured
