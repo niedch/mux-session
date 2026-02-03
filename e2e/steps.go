@@ -170,8 +170,10 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		}
 		tempConfigFile.Close()
 
-		_, err = executeCommand("./mux-session", "switch", dirName, "-f", testCtx.tempConfigFile, "-L", testCtx.tmuxSessionName)
+		output, err := executeCommand("./mux-session", "switch", dirName, "-f", testCtx.tempConfigFile, "-L", testCtx.tmuxSessionName)
 		if err != nil {
+			// Log output for debugging CI failures
+			log.Printf("Switch command failed. Output: %s", output)
 			return err
 		}
 
