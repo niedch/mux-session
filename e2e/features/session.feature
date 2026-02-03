@@ -18,7 +18,8 @@ Feature: Mux Session functionality
     """
 
   Scenario: List sessions shows directories from search path
-    Given I have the following directories:
+    Given a new tmux server
+    And I have the following directories:
       | name          |
       | project-one   |
       | project-two   |
@@ -27,8 +28,9 @@ Feature: Mux Session functionality
       """
       search_paths = ["<search_path>"]
       """
-    Then I should see the following directories in output:
-      | name          |
-      | project-one   |
-      | project-two   |
-      | project-three |
+    Then I should see the following items in output:
+      | item                |
+      | project-one         |
+      | project-two         |
+      | project-three       |
+      | [TMUX] test-session |

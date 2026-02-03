@@ -139,12 +139,12 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		return nil
 	})
 
-	ctx.Step(`^I should see the following directories in output:$`, func(ctx context.Context, table *godog.Table) error {
+	ctx.Step(`^I should see the following items in output:$`, func(ctx context.Context, table *godog.Table) error {
 		testCtx := ctx.Value("testCtx").(*testContext)
 
 		for _, row := range table.Rows[1:] {
-			dirName := row.Cells[0].Value
-			assert.Contains(godog.T(ctx), testCtx.lastOutput, dirName, "Expected output to contain directory: %s", dirName)
+			item := row.Cells[0].Value
+			assert.Contains(godog.T(ctx), testCtx.lastOutput, item, "Expected output to contain: %s", item)
 		}
 
 		return nil
