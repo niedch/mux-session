@@ -5,18 +5,17 @@ import (
 
 	"github.com/niedch/mux-session/internal/conf"
 	"github.com/niedch/mux-session/internal/dataproviders"
-	"github.com/niedch/mux-session/internal/fzf"
 	"github.com/niedch/mux-session/internal/multiplexer"
 	"github.com/niedch/mux-session/internal/tmux"
 	"github.com/spf13/cobra"
 )
 
 var switchCmd = &cobra.Command{
-	Use:   "switch",
+	Use:   "switch <id>",
 	Short: "Switch to an existing or create a new tmux session",
-	Long: `Opens an interactive fzf picker to select a directory or existing tmux session.
-If the selected session exists, switches to it. If not, creates a new session
-with the configured windows.`,
+	Long: `Switch to an existing tmux session or create a new one from the given ID.
+The ID can be a session name or directory path.`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := conf.Load(configFile)
 		if err != nil {
@@ -32,21 +31,13 @@ with the configured windows.`,
 
 		multiService := multiplexer.NewMultiplexerService(tmux)
 
-		provider := dataproviders.NewDirectoryProvider(config.SearchPaths)
-		tmuxProvider := dataproviders.NewTmuxProvider(tmux)
-
-		selected, err := fzf.StartApp(dataproviders.NewComposeProvider(provider, tmuxProvider))
-		if err != nil {
-			log.Fatal(err)
+		item := &dataproviders.Item{
+			Id:      args[0],
+			Display: args[0],
 		}
 
-		if selected == nil {
-			log.Println("No selection done")
-			return
-		}
-
-		projectConfig := config.GetProjectConfig(selected.Id)
-		ok, err := multiService.SwitchSession(selected)
+		projectConfig := config.GetProjectConfig(item.Id)
+		ok, err := multiService.SwitchSession(item)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -55,7 +46,7 @@ with the configured windows.`,
 			return
 		}
 
-		if err := multiService.CreateSession(selected.Display, projectConfig); err != nil {
+		if err := multiService.CreateSession(item.Id, projectConfig); err != nil {
 			log.Fatal(err)
 			return
 		}
