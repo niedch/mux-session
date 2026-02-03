@@ -2,7 +2,6 @@ package tmux
 
 import (
 	"fmt"
-	"log"
 	"path/filepath"
 	"slices"
 
