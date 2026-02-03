@@ -50,3 +50,6 @@ Feature: Mux Session functionality
       test-session
       my-project
       """
+    And session "my-project" contains following windows:
+      | window_name |
+      | Shell       |

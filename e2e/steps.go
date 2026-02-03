@@ -180,6 +180,23 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		return nil
 	})
 
+	ctx.Step(`^session "([^"]*)" contains following windows:$`, func(ctx context.Context, sessionName string, table *godog.Table) error {
+		testCtx := ctx.Value("testCtx").(*testContext)
+
+		prepended_args := []string{"-L", testCtx.tmuxSessionName, "list-windows", "-t", sessionName}
+		output, err := executeCommand("tmux", prepended_args...)
+		if err != nil {
+			return err
+		}
+
+		for _, row := range table.Rows[1:] {
+			windowName := row.Cells[0].Value
+			assert.Contains(godog.T(ctx), output, windowName, "Expected session %s to contain window: %s", sessionName, windowName)
+		}
+
+		return nil
+	})
+
 }
 
 func executeTmuxCommand(name string, args ...string) func(ctx context.Context) error {
