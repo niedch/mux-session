@@ -3,11 +3,11 @@ package cmd
 import (
 	"log"
 	"os"
-	"slices"
 
 	"github.com/niedch/mux-session/internal/conf"
 	"github.com/niedch/mux-session/internal/dataproviders"
 	"github.com/niedch/mux-session/internal/fzf"
+	"github.com/niedch/mux-session/internal/multiplexer"
 	"github.com/niedch/mux-session/internal/tmux"
 	"github.com/spf13/cobra"
 )
@@ -39,6 +39,8 @@ directory name as the session name.`,
 			return
 		}
 
+		multiService := multiplexer.NewMultiplexerService(tmux)
+
 		provider := dataproviders.NewDirectoryProvider(config.SearchPaths)
 		tmuxProvider := dataproviders.NewTmuxProvider(tmux)
 
@@ -53,23 +55,16 @@ directory name as the session name.`,
 		}
 
 		projectConfig := config.GetProjectConfig(selected.Id)
-
-		sessions, err := tmux.ListSessions()
+		ok, err := multiService.SwitchSession(selected)
 		if err != nil {
 			log.Fatal(err)
+		}
+
+		if ok {
 			return
 		}
 
-		if slices.Contains(sessions, selected.Id) {
-			if err := tmux.SwitchSession(selected.Id); err != nil {
-				log.Fatal(err)
-				return
-			}
-
-			return
-		}
-
-		if err := tmux.CreateSession(selected.Display, projectConfig); err != nil {
+		if err := multiService.CreateSession(selected.Display, projectConfig); err != nil {
 			log.Fatal(err)
 			return
 		}
