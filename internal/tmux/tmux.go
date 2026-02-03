@@ -27,6 +27,22 @@ func (t *Tmux) commandOpts() []OptFunc {
 	return nil
 }
 
+func (t *Tmux) SetEnvironment(env map[string]string) error {
+	opts := append(t.commandOpts(),
+		WithTarget(t.socket),
+	)
+
+	for k, v := range env {
+		opts = append(opts, WithArgs(k, v))
+	}
+
+	if err := SetEnvironment(opts...); err != nil {
+		return fmt.Errorf("failed to set environment variables for session '%s': %w", t.socket, err)
+	}
+
+	return nil
+}
+
 func (t *Tmux) ListSessions() ([]string, error) {
 	opts := append(t.commandOpts(), WithFormat("#S"))
 	return ListSessions(opts...)
@@ -83,10 +99,8 @@ func (t *Tmux) CreateSession(dirPath string, projectConfig conf.ProjectConfig) e
 		return fmt.Errorf("failed to create session %s: %w", sessionName, err)
 	}
 
-	for key, value := range projectConfig.Env {
-		if err := exec.Command("tmux", "set-environment", "-t", sessionName, key, value).Run(); err != nil {
-			return fmt.Errorf("failed to set environment variable '%s' for session '%s': %w", key, sessionName, err)
-		}
+	if err := t.SetEnvironment(projectConfig.Env); err != nil {
+		return err
 	}
 
 	// Setup panels for first window if configured
