@@ -49,9 +49,9 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		return nil
 	})
 
-	ctx.Step(`^I build the mux-session$`, executeCommandStep("go", "build", "-o", "mux-session", "."))
+	ctx.Step(`^I build the mux-session$`, executeCommandStep("go", "build", "-o", "mux-session", ".."))
 	ctx.Step(`^I run list-sessions$`, executeTmuxCommand("tmux", "list-sessions"))
-	ctx.Step(`^I run mux-session with help flag$`, executeCommandStep("mux-session", "--help"))
+	ctx.Step(`^I run mux-session with help flag$`, executeCommandStep("./mux-session", "--help"))
 
 	ctx.Step(`^I expect following sessions:$`, func(ctx context.Context, docString *godog.DocString) error {
 		testCtx := ctx.Value("testCtx").(*testContext)
