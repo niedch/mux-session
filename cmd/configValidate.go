@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/niedch/mux-session/internal/conf"
 	"github.com/spf13/cobra"
@@ -18,9 +18,9 @@ configurations.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := conf.Load(configFile)
 		if err != nil {
-			fmt.Printf("Error loading config: %v\n", err)
-			return
+			log.Fatalf("Error loading config: %v\n", err)
 		}
+
 		config.PrettyPrint()
 	},
 }

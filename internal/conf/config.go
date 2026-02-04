@@ -44,12 +44,12 @@ func Load(configFile string) (*Config, error) {
 	var conf Config
 
 	if err := k.UnmarshalWithConf("", &conf, koanf.UnmarshalConf{Tag: "koanf"}); err != nil {
-		log.Fatal("Cannot load Config", err)
+		log.Fatal("Cannot load Config: ", err)
 		return nil, err
 	}
 
 	if err := validateConfig(&conf); err != nil {
-		log.Fatal("Config validation failed", err)
+		log.Fatal("Config validation failed: ", err)
 		return nil, err
 	}
 
