@@ -14,21 +14,24 @@ Feature: Panel Configuration
       
       [[project]]
       name = "my-project"
+      
+      [[project.window]]
+      window_name = "HorizontalSplit"
+      
+      [[project.window.panel_config]]
+      panel_direction = "h"
+      
+      [[project.window.panel_config]]
+      panel_direction = "h"
 
       [[project.window]]
-      window_name = "MultiPanel"
-
-      [[project.window.panel_config]]
-      panel_direction = "h"
-      cmd = "cat"
-
-      [[project.window.panel_config]]
-      panel_direction = "h"
-      cmd = "tail -f /dev/null"
-
+      window_name = "VerticalSplit"
+      
       [[project.window.panel_config]]
       panel_direction = "v"
-      cmd = "sleep 5"
+      
+      [[project.window.panel_config]]
+      panel_direction = "v"
       """
     Then I expect following sessions:
       """
@@ -36,10 +39,7 @@ Feature: Panel Configuration
       my-project
       """
     And session "my-project" contains following windows:
-      | window_name |
-      | MultiPanel  |
-    And window "MultiPanel" in session "my-project" contains following panels:
-      | command |
-      | cat     |
-      | tail    |
-      | sleep   |
+      | window_name     |
+      | HorizontalSplit |
+    And window "HorizontalSplit" in session "my-project" is split vertically
+    And window "VerticalSplit" in session "my-project" is split horizontally

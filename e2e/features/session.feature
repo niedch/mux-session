@@ -69,3 +69,31 @@ Feature: Mux Session functionality
       | Shell         |
       | AnotherWindow |
 
+  Scenario: Switch command creates new session from directory with Custom config
+    Given a new tmux server
+    And I have the following directories:
+      | name              |
+      | my-project        |
+      | my-second-project |
+    When I run mux-session switch "my-second-project" with config:
+      """
+      search_paths = ["<search_path>"]
+      
+      [default]
+      [[default.window]]
+      window_name = "Shell"
+      
+      [[project]]
+      name = "my-second-project"
+      
+      [[project.window]]
+      window_name = "Editor"
+      """
+    Then I expect following sessions:
+      """
+      test-session
+      my-second-project
+      """
+    And session "my-second-project" contains following windows:
+      | window_name |
+      | Editor      |
