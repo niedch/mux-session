@@ -129,6 +129,23 @@ func RegisterTmuxSteps(ctx *godog.ScenarioContext) {
 
 		return nil
 	})
+
+	ctx.Step(`^window "([^"]*)" in session "([^"]*)" has environment variable "([^"]*)" set to "([^"]*)"$`, func(ctx context.Context, windowName, sessionName, envVar, expectedValue string) error {
+		testCtx := ctx.Value("testCtx").(*testContext)
+
+		// Use display-message to retrieve the environment variable value
+		cmd := executeTmuxCommand("tmux", "display-message", "-p", "-t", fmt.Sprintf("%s:%s", sessionName, windowName), fmt.Sprintf("#{%s}", envVar))
+		if err := cmd(ctx); err != nil {
+			return fmt.Errorf("failed to get environment variable: %v", err)
+		}
+
+		actualValue := strings.TrimSpace(testCtx.lastOutput)
+		if actualValue != expectedValue {
+			return fmt.Errorf("expected env var %s to be '%s', but got '%s'", envVar, expectedValue, actualValue)
+		}
+
+		return nil
+	})
 }
 
 func executeTmuxCommand(name string, args ...string) func(ctx context.Context) error {

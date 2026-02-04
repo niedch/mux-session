@@ -4,13 +4,46 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/cucumber/godog"
+	"github.com/stretchr/testify/assert"
 )
 
 func RegisterMuxSessionSteps(ctx *godog.ScenarioContext) {
+	ctx.Step(`^I build the mux-session$`, executeCommandStep("go", "build", "-o", "mux-session", ".."))
 	ctx.Step(`^I run mux-session with help flag$`, executeCommandStep("./mux-session", "--help"))
+
+	ctx.Step(`^I should see help output$`, func(ctx context.Context) error {
+		testCtx := ctx.Value("testCtx").(*testContext)
+		if testCtx.lastOutput == "" {
+			return fmt.Errorf("no output captured")
+		}
+
+		fmt.Printf("Verifying output: %s\n", testCtx.lastOutput) // Print for debugging
+		return nil
+	})
+
+	ctx.Step(`^I have the following directories:$`, func(ctx context.Context, table *godog.Table) error {
+		testCtx := ctx.Value("testCtx").(*testContext)
+
+		tempDir, err := os.MkdirTemp("", fmt.Sprintf("mux-session-test-%s-*", testCtx.tmuxSessionName))
+		if err != nil {
+			return fmt.Errorf("failed to create temp directory: %v", err)
+		}
+		testCtx.tempDir = tempDir
+
+		for _, row := range table.Rows[1:] {
+			dirName := row.Cells[0].Value
+			dirPath := filepath.Join(tempDir, dirName)
+			if err := os.MkdirAll(dirPath, 0755); err != nil {
+				return fmt.Errorf("failed to create directory %s: %v", dirPath, err)
+			}
+		}
+
+		return nil
+	})
 
 	ctx.Step(`^I run mux-session list-sessions with config:$`, func(ctx context.Context, docString *godog.DocString) error {
 		testCtx := ctx.Value("testCtx").(*testContext)
@@ -27,6 +60,17 @@ func RegisterMuxSessionSteps(ctx *godog.ScenarioContext) {
 		err := executeMuxSessionWithConfig("switch", dirName)(ctx, docString)
 		if err != nil {
 			return err
+		}
+
+		return nil
+	})
+
+	ctx.Step(`^I should see the following items in output:$`, func(ctx context.Context, table *godog.Table) error {
+		testCtx := ctx.Value("testCtx").(*testContext)
+
+		for _, row := range table.Rows[1:] {
+			item := row.Cells[0].Value
+			assert.Contains(godog.T(ctx), testCtx.lastOutput, item, "Expected output to contain: %s", item)
 		}
 
 		return nil
