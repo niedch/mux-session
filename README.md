@@ -84,6 +84,10 @@ You can override default settings for specific projects:
 [[project]]
 name = "mux-session"
 
+[project.env]
+FOO = "bar"
+BAZ = "qux"
+
 [[project.window]]
 window_name = "nvim"
 cmd = "vim ."

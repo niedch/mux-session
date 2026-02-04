@@ -10,6 +10,7 @@ func NewComposeProvider(dataproviders ...DataProvider) *ComposeProvider {
 	}
 }
 
+// Returns Items from all providers and removes duplicates that have the same Id 
 func (dp *ComposeProvider) GetItems() ([]Item, error) {
 	var items []Item
 	seen := make(map[string]bool)

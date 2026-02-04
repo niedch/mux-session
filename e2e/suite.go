@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 
@@ -9,7 +10,11 @@ import (
 
 func InitializeSuite(ctx *godog.TestSuiteContext) {
 	ctx.BeforeSuite(func() {
-		// Setup before running the test suite
+		// Build the binary before running tests
+		cmd := exec.Command("go", "build", "-o", "mux-session", "..")
+		if output, err := cmd.CombinedOutput(); err != nil {
+			panic(fmt.Sprintf("Failed to build mux-session: %v\nOutput: %s", err, string(output)))
+		}
 	})
 
 	ctx.AfterSuite(func() {
