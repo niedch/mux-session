@@ -154,7 +154,7 @@ func (m *MultiplexerService) setupPanels(sessionName, windowName, dirPath string
 			return fmt.Errorf("failed to create split for panel %d: %w", i+1, err)
 		}
 
-		if err := m.tmux.SendKeys(target, panels[0].Cmd); err != nil {
+		if err := m.tmux.SendKeys(target, panel.Cmd); err != nil {
 			return fmt.Errorf("failed to send command to panel %d: %w", i+1, err)
 		}
 	}
