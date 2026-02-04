@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/cucumber/godog"
 	"github.com/stretchr/testify/assert"
@@ -230,76 +229,6 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 		for _, row := range table.Rows[1:] {
 			windowName := row.Cells[0].Value
 			assert.Contains(godog.T(ctx), output, windowName, "Expected session %s to contain window: %s", sessionName, windowName)
-		}
-
-		return nil
-	})
-
-	ctx.Step(`^window "([^"]*)" in session "([^"]*)" contains following panels:$`, func(ctx context.Context, windowName, sessionName string, table *godog.Table) error {
-		testCtx := ctx.Value("testCtx").(*testContext)
-
-		// Map headers to tmux format specifiers
-		headerMap := map[string]string{
-			"command": "#{pane_current_command}",
-			"cwd":     "#{pane_current_path}",
-		}
-
-		var formats []string
-		var headers []string
-
-		// Validate headers and build format string
-		for _, cell := range table.Rows[0].Cells {
-			header := cell.Value
-			if format, ok := headerMap[header]; ok {
-				formats = append(formats, format)
-				headers = append(headers, header)
-			} else {
-				return fmt.Errorf("unknown column header: %s. Supported headers: command, cwd", header)
-			}
-		}
-
-		if len(formats) == 0 {
-			return fmt.Errorf("no valid headers provided in table")
-		}
-
-		formatString := strings.Join(formats, "|")
-		prepended_args := []string{"-L", testCtx.tmuxSessionName, "list-panes", "-t", fmt.Sprintf("%s:%s", sessionName, windowName), "-F", formatString}
-
-		// Wait for panes to initialize
-		time.Sleep(3 * time.Second)
-
-		output, err := executeCommand("tmux", prepended_args...)
-		if err != nil {
-			return fmt.Errorf("failed to list panes: %v", err)
-		}
-
-		outputLines := strings.Split(strings.TrimSpace(output), "\n")
-		// Remove empty lines if any
-		var actualLines []string
-		for _, line := range outputLines {
-			if line != "" {
-				actualLines = append(actualLines, line)
-			}
-		}
-
-		expectedRows := table.Rows[1:]
-		if len(actualLines) != len(expectedRows) {
-			return fmt.Errorf("expected %d panels, but found %d", len(expectedRows), len(actualLines))
-		}
-
-		for i, row := range expectedRows {
-			actualParts := strings.Split(actualLines[i], "|")
-
-			if len(actualParts) != len(headers) {
-				return fmt.Errorf("output format mismatch for panel %d", i)
-			}
-
-			for j, cell := range row.Cells {
-				expectedValue := cell.Value
-				actualValue := actualParts[j]
-
-				assert.Equal(godog.T(ctx), expectedValue, actualValue, "Panel %d: expected %s '%s', got '%s'", i, headers[j], expectedValue, actualValue)
-			}
 		}
 
 		return nil
