@@ -46,9 +46,7 @@ func RegisterMuxSessionSteps(ctx *godog.ScenarioContext) {
 	})
 
 	ctx.Step(`^I run mux-session list-sessions with config:$`, func(ctx context.Context, docString *godog.DocString) error {
-		testCtx := ctx.Value("testCtx").(*testContext)
-
-		err := executeMuxSessionWithConfig("list-sessions", "-f", testCtx.tempConfigFile, "-L", testCtx.tmuxSessionName)(ctx, docString)
+		err := executeMuxSessionWithConfig("list-sessions")(ctx, docString)
 		if err != nil {
 			return err
 		}
@@ -65,7 +63,17 @@ func RegisterMuxSessionSteps(ctx *godog.ScenarioContext) {
 		return nil
 	})
 
-	ctx.Step(`^I should see the following items in output:$`, func(ctx context.Context, table *godog.Table) error {
+	ctx.Step(`^I run mux-session config-validate with config:$`, func(ctx context.Context, docString *godog.DocString) error {
+		testCtx := ctx.Value("testCtx").(*testContext)
+		err := executeMuxSessionWithConfig("config-validate")(ctx, docString)
+		if err != nil {
+			godog.Logf(ctx, "Error when executing '%s'\n", testCtx.lastOutput)
+		}
+
+		return nil
+	})
+
+	ctx.Step(`^I should see the following (lines?|items?) in output:$`, func(ctx context.Context, _ string, table *godog.Table) error {
 		testCtx := ctx.Value("testCtx").(*testContext)
 
 		for _, row := range table.Rows[1:] {
@@ -99,10 +107,14 @@ func executeMuxSessionWithConfig(cmd string, args ...string) func(ctx context.Co
 		tempConfigFile.Close()
 
 		args = append(args, "-f", testCtx.tempConfigFile)
-		args = append(args, "-L", testCtx.tmuxSessionName)
+		if cmd != "config-validate" {
+			args = append(args, "-L", testCtx.tmuxSessionName)
+		}
 
 		output, err := executeCommand("./mux-session", append([]string{cmd}, args...)...)
 		if err != nil {
+			testCtx.lastOutput = output
+			godog.Logf(ctx, "Error when '%s' '%s'\n", cmd, testCtx.lastOutput)
 			return err
 		}
 
