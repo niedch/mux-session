@@ -16,6 +16,7 @@ func TestE2E(t *testing.T) {
 			Paths:         []string{"features"},
 			StopOnFailure: true,
 			Strict:        true,
+			Concurrency: 4,
 		},
 	}
 
