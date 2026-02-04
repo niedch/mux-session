@@ -29,7 +29,7 @@ var listSessionsCmd = &cobra.Command{
 
 		directoryProvider := dataproviders.NewDirectoryProvider(config.SearchPaths)
 		tmuxProvider := dataproviders.NewTmuxProvider(tmuxWrapper)
-		composedProvider := dataproviders.NewComposeProvider(directoryProvider, tmuxProvider)
+		composedProvider := dataproviders.NewComposeProvider(directoryProvider, tmuxProvider).WithMarkDuplicates(true)
 
 		items, err := composedProvider.GetItems()
 		if err != nil {

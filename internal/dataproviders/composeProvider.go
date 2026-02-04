@@ -1,7 +1,10 @@
 package dataproviders
 
+import "strings"
+
 type ComposeProvider struct {
-	dataproviders []DataProvider
+	dataproviders  []DataProvider
+	markDuplicates bool
 }
 
 func NewComposeProvider(dataproviders ...DataProvider) *ComposeProvider {
@@ -10,10 +13,17 @@ func NewComposeProvider(dataproviders ...DataProvider) *ComposeProvider {
 	}
 }
 
-// Returns Items from all providers and removes duplicates that have the same Id 
+func (dp *ComposeProvider) WithMarkDuplicates(mark bool) *ComposeProvider {
+	dp.markDuplicates = mark
+	return dp
+}
+
+// GetItems returns items from all providers. If markDuplicates is true,
+// it removes duplicates and prepends "[x] " to items that were duplicated,
+// and "[ ] " to unique items.
 func (dp *ComposeProvider) GetItems() ([]Item, error) {
 	var items []Item
-	seen := make(map[string]bool)
+	seen := make(map[string]int)
 
 	for _, dataprovider := range dp.dataproviders {
 		dp_items, err := dataprovider.GetItems()
@@ -22,10 +32,20 @@ func (dp *ComposeProvider) GetItems() ([]Item, error) {
 		}
 
 		for _, item := range dp_items {
-			if _, ok := seen[item.Id]; !ok {
-				items = append(items, item)
-				seen[item.Id] = true
+			if idx, ok := seen[item.Id]; ok {
+				if dp.markDuplicates {
+					if strings.HasPrefix(items[idx].Display, "[ ] ") {
+						items[idx].Display = strings.Replace(items[idx].Display, "[ ] ", "[x] ", 1)
+					}
+				}
+				continue
 			}
+
+			if dp.markDuplicates {
+				item.Display = "[ ] " + item.Display
+			}
+			items = append(items, item)
+			seen[item.Id] = len(items) - 1
 		}
 	}
 	return items, nil
