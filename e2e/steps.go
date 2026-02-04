@@ -3,7 +3,6 @@ package e2e
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -32,18 +31,18 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 
 		socketPath := filepath.Join("/tmp", "tmux-1000", testCtx.tmuxSessionName)
 		if err := os.Remove(socketPath); err != nil && !os.IsNotExist(err) {
-			log.Printf("Failed to remove socket file %s: %v", socketPath, err)
+			godog.Logf(ctx, "Failed to remove socket file %s: %v", socketPath, err)
 		}
 
 		if testCtx.tempConfigFile != "" {
 			if err := os.Remove(testCtx.tempConfigFile); err != nil && !os.IsNotExist(err) {
-				log.Printf("Failed to remove temp config file %s: %v", testCtx.tempConfigFile, err)
+				godog.Logf(ctx, "Failed to remove temp config file %s: %v", testCtx.tempConfigFile, err)
 			}
 		}
 
 		if testCtx.tempDir != "" {
 			if err := os.RemoveAll(testCtx.tempDir); err != nil {
-				log.Printf("Failed to remove temp directory %s: %v", testCtx.tempDir, err)
+				godog.Logf(ctx, "Failed to remove temp directory %s: %v", testCtx.tempDir, err)
 			}
 		}
 
@@ -58,6 +57,9 @@ func executeCommandStep(name string, args ...string) func(ctx context.Context) e
 	return func(ctx context.Context) error {
 		testCtx := ctx.Value("testCtx").(*testContext)
 
+		comb_args := strings.Join(args, " ")
+		godog.Logf(ctx, "Executing Command '%s %s'\n", name, comb_args)
+
 		output, err := executeCommand(name, args...)
 		if err != nil {
 			return err
@@ -70,7 +72,6 @@ func executeCommandStep(name string, args ...string) func(ctx context.Context) e
 
 func executeCommand(name string, args ...string) (string, error) {
 	comb_args := strings.Join(args, " ")
-	log.Printf("Executing Command '%s %s'\n", name, comb_args)
 
 	cmd := exec.Command(name, args...)
 	output, err := cmd.CombinedOutput()

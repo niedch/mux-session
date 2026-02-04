@@ -21,7 +21,7 @@ func RegisterMuxSessionSteps(ctx *godog.ScenarioContext) {
 			return fmt.Errorf("no output captured")
 		}
 
-		fmt.Printf("Verifying output: %s\n", testCtx.lastOutput) // Print for debugging
+		godog.Logf(ctx, "Verifying output: %s\n", testCtx.lastOutput)
 		return nil
 	})
 
