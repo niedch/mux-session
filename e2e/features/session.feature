@@ -29,7 +29,7 @@ Feature: Mux Session functionality
     When I run mux-session switch "my-project" with config:
       """
       search_paths = ["<search_path>"]
-
+      
       [default]
       [[default.window]]
       window_name = "Shell"
@@ -42,3 +42,30 @@ Feature: Mux Session functionality
     And session "my-project" contains following windows:
       | window_name |
       | Shell       |
+
+  Scenario: Switch command creates new session from directory with multiple Windows
+    Given a new tmux server
+    And I have the following directories:
+      | name       |
+      | my-project |
+    When I run mux-session switch "my-project" with config:
+      """
+      search_paths = ["<search_path>"]
+      
+      [default]
+      [[default.window]]
+      window_name = "Shell"
+      
+      [[default.window]]
+      window_name = "AnotherWindow"
+      """
+    Then I expect following sessions:
+      """
+      test-session
+      my-project
+      """
+    And session "my-project" contains following windows:
+      | window_name   |
+      | Shell         |
+      | AnotherWindow |
+
