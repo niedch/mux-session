@@ -146,6 +146,42 @@ func RegisterTmuxSteps(ctx *godog.ScenarioContext) {
 
 		return nil
 	})
+
+	ctx.Step(`^window "([^"]*)" in session "([^"]*)" is active$`, func(ctx context.Context, windowName, sessionName string) error {
+		testCtx := ctx.Value("testCtx").(*testContext)
+
+		cmd := executeTmuxCommand("tmux", "list-windows", "-t", sessionName, "-F", "#{window_name}:#{window_active}")
+		if err := cmd(ctx); err != nil {
+			return fmt.Errorf("failed to list windows: %v", err)
+		}
+
+		lines := strings.Split(strings.TrimSpace(testCtx.lastOutput), "\n")
+		found := false
+		isActive := false
+
+		for _, line := range lines {
+			parts := strings.Split(line, ":")
+			if len(parts) != 2 {
+				continue
+			}
+			if parts[0] == windowName {
+				found = true
+				if parts[1] == "1" {
+					isActive = true
+				}
+				break
+			}
+		}
+
+		if !found {
+			return fmt.Errorf("window '%s' not found in session '%s'", windowName, sessionName)
+		}
+		if !isActive {
+			return fmt.Errorf("window '%s' is not active", windowName)
+		}
+
+		return nil
+	})
 }
 
 func executeTmuxCommand(name string, args ...string) func(ctx context.Context) error {
