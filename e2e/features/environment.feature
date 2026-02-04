@@ -18,9 +18,12 @@ Feature: Environment Variable Management
       [project.env]
       MY_PROJECT_VAR = "production_value"
       ANOTHER_VAR = "12345"
-
+      
       [[project.window]]
       window_name = "Main"
+
+      [[project.window]]
+      window_name = "Sub"
       """
     Then I expect following sessions:
       """
@@ -32,3 +35,5 @@ Feature: Environment Variable Management
       | Main        |
     And window "Main" in session "my-project" has environment variable "MY_PROJECT_VAR" set to "production_value"
     And window "Main" in session "my-project" has environment variable "ANOTHER_VAR" set to "12345"
+    And window "Sub" in session "my-project" has environment variable "MY_PROJECT_VAR" set to "production_value"
+    And window "Sub" in session "my-project" has environment variable "ANOTHER_VAR" set to "12345"
