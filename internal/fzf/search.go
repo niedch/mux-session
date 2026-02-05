@@ -5,11 +5,15 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/niedch/mux-session/internal/dataproviders"
+)
+
+const (
+	inputHeight = 1
+	helpHeight  = 1
 )
 
 func StartApp(dataProvider dataproviders.DataProvider) (*dataproviders.Item, error) {
@@ -47,21 +51,6 @@ type model struct {
 	selected  *dataproviders.Item
 	width     int
 	height    int
-}
-
-type keymap struct{}
-
-func (k keymap) ShortHelp() []key.Binding {
-	return []key.Binding{
-		key.NewBinding(key.WithKeys("up", "ctrl+p"), key.WithHelp("↑/ctrl+p", "up")),
-		key.NewBinding(key.WithKeys("down", "ctrl+n"), key.WithHelp("↓/ctrl+n", "down")),
-		key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "select")),
-		key.NewBinding(key.WithKeys("esc", "ctrl+c"), key.WithHelp("esc", "quit")),
-	}
-}
-
-func (k keymap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{k.ShortHelp()}
 }
 
 func initialModel(items []dataproviders.Item) model {
@@ -145,46 +134,8 @@ func (m *model) updateFiltered() {
 	m.filtered = filterItems(m.items, query)
 }
 
-func filterItems(items []dataproviders.Item, query string) []item {
-	var result []item
-	queryRunes := []rune(strings.ToLower(query))
-
-	for i, dpItem := range items {
-		itemText := dpItem.Display
-		targetRunes := []rune(strings.ToLower(itemText))
-		queryIndex, targetIndex := 0, 0
-		matches := make([]int, 0, len(queryRunes))
-
-		for queryIndex < len(queryRunes) && targetIndex < len(targetRunes) {
-			if queryRunes[queryIndex] == targetRunes[targetIndex] {
-				matches = append(matches, targetIndex)
-				queryIndex++
-			}
-			targetIndex++
-		}
-
-		if queryIndex == len(queryRunes) {
-			result = append(result, item{text: itemText, index: i, matches: matches})
-		}
-	}
-	return result
-}
-
-const (
-	inputHeight = 1
-	helpHeight  = 1
-)
-
 func (m model) View() string {
-	// If height is not set (e.g. init), default to a reasonable value.
-	if m.height == 0 {
-		m.height = 10
-	}
-
-	listHeight := m.height - inputHeight - helpHeight
-	if listHeight < 1 {
-		listHeight = 1
-	}
+	listHeight := max(m.height - inputHeight - helpHeight, 1)
 
 	start, end := m.calculateVisibleRange(listHeight)
 
