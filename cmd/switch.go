@@ -30,7 +30,7 @@ The ID can be a session name or directory path.`,
 
 		directoryProvider := dataproviders.NewDirectoryProvider(config.SearchPaths)
 		tmuxProvider := dataproviders.NewTmuxProvider(tmux)
-		composedProvider := dataproviders.NewComposeProvider(directoryProvider, tmuxProvider)
+		composedProvider := dataproviders.NewComposeProvider(directoryProvider, tmuxProvider).WithMarkDuplicates(true)
 
 		items, err := composedProvider.GetItems()
 		if err != nil {
@@ -56,7 +56,7 @@ The ID can be a session name or directory path.`,
 			return
 		}
 
-		if err := multiService.CreateSession(item.Display, projectConfig); err != nil {
+		if err := multiService.CreateSession(item, projectConfig); err != nil {
 			log.Fatal(err)
 		}
 	},
