@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/niedch/mux-session/internal/conf"
@@ -27,13 +28,23 @@ The ID can be a session name or directory path.`,
 			log.Fatal(err)
 		}
 
-		multiService := multiplexer.NewMultiplexerService(tmux)
+		directoryProvider := dataproviders.NewDirectoryProvider(config.SearchPaths)
+		tmuxProvider := dataproviders.NewTmuxProvider(tmux)
+		composedProvider := dataproviders.NewComposeProvider(directoryProvider, tmuxProvider).WithMarkDuplicates(true)
 
-		item := &dataproviders.Item{
-			Id:      args[0],
-			Display: args[0],
+		items, err := composedProvider.GetItems()
+		if err != nil {
+			log.Fatal(err)
 		}
 
+		item, err := findItem(args[0], items)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Printf("Found item with id '%s', and display '%s'\n", item.Id, item.Display)
+		
+		multiService := multiplexer.NewMultiplexerService(tmux)
 		projectConfig := config.GetProjectConfig(item.Id)
 
 		ok, err := multiService.SwitchSession(item)
@@ -45,10 +56,20 @@ The ID can be a session name or directory path.`,
 			return
 		}
 
-		if err := multiService.CreateSession(item.Id, projectConfig); err != nil {
+		if err := multiService.CreateSession(item, projectConfig); err != nil {
 			log.Fatal(err)
 		}
 	},
+}
+
+func findItem(id string, items []dataproviders.Item) (*dataproviders.Item, error) {
+	for _, item := range items {
+		if item.Id == id {
+			return &item, nil
+		}
+	}
+
+	return nil, fmt.Errorf("Cannot find Id '%s'", id)
 }
 
 func init() {

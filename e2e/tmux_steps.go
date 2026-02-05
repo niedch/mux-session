@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/cucumber/godog"
 	"github.com/stretchr/testify/assert"
@@ -19,6 +20,9 @@ func RegisterTmuxSteps(ctx *godog.ScenarioContext) {
 		if err := executeTmuxCommand("tmux", "new-session", "-d", "-s", "test-session")(ctx); err != nil {
 			return err
 		}
+
+		// Add sleep to wait for initialization of tmux server
+		time.Sleep(100 * time.Millisecond)
 
 		return nil
 	})
@@ -178,6 +182,31 @@ func RegisterTmuxSteps(ctx *godog.ScenarioContext) {
 		}
 		if !isActive {
 			return fmt.Errorf("window '%s' is not active", windowName)
+		}
+
+		return nil
+	})
+
+	ctx.Step(`^I execute following Command in Session "([^"]*)" on Window "([^"]*)":$`, func(ctx context.Context, sessionName, windowName string, command *godog.DocString) error {
+		cmdStr := strings.TrimSpace(command.Content)
+		target := fmt.Sprintf("%s:%s", sessionName, windowName)
+
+		// Wait for Session to initialized
+		time.Sleep(1 * time.Second)
+
+		// Send the command and Enter
+		cmd := executeTmuxCommand("tmux", "send-keys", "-t", target, cmdStr, "C-m")
+		if err := cmd(ctx); err != nil {
+			return fmt.Errorf("failed to send command: %v", err)
+		}
+
+		// Wait for command execution
+		time.Sleep(1 * time.Second)
+
+		// Capture pane content to allow verification
+		captureCmd := executeTmuxCommand("tmux", "capture-pane", "-p", "-t", target)
+		if err := captureCmd(ctx); err != nil {
+			return fmt.Errorf("failed to capture pane output: %v", err)
 		}
 
 		return nil

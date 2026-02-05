@@ -21,8 +21,10 @@ func NewMultiplexerService(tmux *tmux.Tmux) *MultiplexerService {
 	}
 }
 
-func (m *MultiplexerService) CreateSession(dirPath string, projectConfig conf.ProjectConfig) error {
+func (m *MultiplexerService) CreateSession(item *dataproviders.Item, projectConfig conf.ProjectConfig) error {
+	dirPath := item.Path
 	sessionName := filepath.Base(dirPath)
+
 	if projectConfig.Name != nil {
 		sessionName = *projectConfig.Name
 	}

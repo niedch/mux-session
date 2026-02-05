@@ -38,6 +38,7 @@ func (dp *DirectoryProvider) GetItems() ([]Item, error) {
 				dirs = append(dirs, Item{
 					Id:      filepath.Base(fullPath),
 					Display: fullPath,
+					Path:    fullPath,
 				})
 			}
 		}
