@@ -18,9 +18,6 @@ func (dp *ComposeProvider) WithMarkDuplicates(mark bool) *ComposeProvider {
 	return dp
 }
 
-// GetItems returns items from all providers. If markDuplicates is true,
-// it removes duplicates and prepends "[x] " to items that were duplicated,
-// and "[ ] " to unique items.
 func (dp *ComposeProvider) GetItems() ([]Item, error) {
 	var items []Item
 	seen := make(map[string]int)
@@ -41,7 +38,7 @@ func (dp *ComposeProvider) GetItems() ([]Item, error) {
 				continue
 			}
 
-			if dp.markDuplicates {
+			if dp.markDuplicates && !strings.HasPrefix(item.Display, "[TMUX]") {
 				item.Display = "[ ] " + item.Display
 			}
 			items = append(items, item)
