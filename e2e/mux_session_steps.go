@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/cucumber/godog"
@@ -78,13 +77,8 @@ func RegisterMuxSessionSteps(ctx *godog.ScenarioContext) {
 		testCtx := ctx.Value("testCtx").(*testContext)
 
 		for _, row := range table.Rows[1:] {
-			pattern := row.Cells[0].Value
-			re, err := regexp.Compile(pattern)
-			if err != nil {
-				return fmt.Errorf("invalid regex pattern '%s': %w", pattern, err)
-			}
-
-			assert.True(godog.T(ctx), re.MatchString(testCtx.lastOutput), "Expected output '%s' to match regex: '%s'", testCtx.lastOutput, pattern)
+			item := row.Cells[0].Value
+			assert.Contains(godog.T(ctx), testCtx.lastOutput, item, "Expected output to contain: %s", item)
 		}
 
 		return nil

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/cucumber/godog"
 	"github.com/stretchr/testify/assert"
@@ -20,9 +19,6 @@ func RegisterTmuxSteps(ctx *godog.ScenarioContext) {
 		if err := executeTmuxCommand("tmux", "new-session", "-d", "-s", "test-session")(ctx); err != nil {
 			return err
 		}
-
-		// Add sleep to wait for initialization of tmux server
-		time.Sleep(100 * time.Millisecond)
 
 		return nil
 	})

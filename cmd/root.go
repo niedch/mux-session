@@ -44,7 +44,7 @@ directory name as the session name.`,
 		provider := dataproviders.NewDirectoryProvider(config.SearchPaths)
 		tmuxProvider := dataproviders.NewTmuxProvider(tmux)
 
-		selected, err := fzf.StartApp(dataproviders.NewComposeProvider(provider, tmuxProvider).WithMarkDuplicates(true))
+		selected, err := fzf.StartApp(dataproviders.NewComposeProvider(provider, tmuxProvider))
 		if err != nil {
 			log.Fatal(err)
 		}
