@@ -125,6 +125,7 @@ func executeMuxSessionWithConfig(cmd string, args ...string) func(ctx context.Co
 		}
 
 		testCtx.lastOutput = output
+		godog.Logf(ctx, "Stdout on '%s' : '%s'\n", cmd, testCtx.lastOutput)
 		return nil
 	}
 }

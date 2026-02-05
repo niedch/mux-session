@@ -186,6 +186,31 @@ func RegisterTmuxSteps(ctx *godog.ScenarioContext) {
 
 		return nil
 	})
+
+	ctx.Step(`^I execute following Command in Session "([^"]*)" on Window "([^"]*)":$`, func(ctx context.Context, sessionName, windowName string, command *godog.DocString) error {
+		cmdStr := strings.TrimSpace(command.Content)
+		target := fmt.Sprintf("%s:%s", sessionName, windowName)
+
+		// Wait for Session to initialized
+		time.Sleep(1 * time.Second)
+
+		// Send the command and Enter
+		cmd := executeTmuxCommand("tmux", "send-keys", "-t", target, cmdStr, "C-m")
+		if err := cmd(ctx); err != nil {
+			return fmt.Errorf("failed to send command: %v", err)
+		}
+
+		// Wait for command execution
+		time.Sleep(1 * time.Second)
+
+		// Capture pane content to allow verification
+		captureCmd := executeTmuxCommand("tmux", "capture-pane", "-p", "-t", target)
+		if err := captureCmd(ctx); err != nil {
+			return fmt.Errorf("failed to capture pane output: %v", err)
+		}
+
+		return nil
+	})
 }
 
 func executeTmuxCommand(name string, args ...string) func(ctx context.Context) error {
