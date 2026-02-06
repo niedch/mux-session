@@ -7,7 +7,7 @@ import (
 	"github.com/niedch/mux-session/internal/conf"
 	"github.com/niedch/mux-session/internal/dataproviders"
 	"github.com/niedch/mux-session/internal/fzf"
-	"github.com/niedch/mux-session/internal/multiplexer"
+	"github.com/niedch/mux-session/internal/orchestrator"
 	"github.com/niedch/mux-session/internal/tmux"
 	"github.com/spf13/cobra"
 )
@@ -39,7 +39,7 @@ directory name as the session name.`,
 			return
 		}
 
-		multiService := multiplexer.NewMultiplexerService(tmux)
+		multiService := orchestrator.New(tmux)
 
 		provider := dataproviders.NewDirectoryProvider(config.SearchPaths)
 		tmuxProvider := dataproviders.NewTmuxProvider(tmux)

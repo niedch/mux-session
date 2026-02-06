@@ -1,4 +1,4 @@
-package multiplexer
+package orchestrator
 
 import (
 	"fmt"
@@ -11,17 +11,17 @@ import (
 	"github.com/niedch/mux-session/internal/tmux"
 )
 
-type MultiplexerService struct {
+type OrchestratorService struct {
 	tmux *tmux.Tmux
 }
 
-func NewMultiplexerService(tmux *tmux.Tmux) *MultiplexerService {
-	return &MultiplexerService{
+func New(tmux *tmux.Tmux) *OrchestratorService {
+	return &OrchestratorService{
 		tmux: tmux,
 	}
 }
 
-func (m *MultiplexerService) CreateSession(item *dataproviders.Item, projectConfig conf.ProjectConfig) error {
+func (m *OrchestratorService) CreateSession(item *dataproviders.Item, projectConfig conf.ProjectConfig) error {
 	dirPath := item.Path
 	sessionName := filepath.Base(dirPath)
 
@@ -82,7 +82,7 @@ func (m *MultiplexerService) CreateSession(item *dataproviders.Item, projectConf
 	return m.tmux.SwitchSession(sessionName)
 }
 
-func (m *MultiplexerService) SwitchSession(selected *dataproviders.Item) (bool, error) {
+func (m *OrchestratorService) SwitchSession(selected *dataproviders.Item) (bool, error) {
 	sessions, err := m.tmux.ListSessions()
 	if err != nil {
 		return false, err
@@ -99,7 +99,7 @@ func (m *MultiplexerService) SwitchSession(selected *dataproviders.Item) (bool, 
 	return false, nil
 }
 
-func (m *MultiplexerService) createWindowWithPanels(sessionName string, dirPath string, window conf.WindowConfig) error {
+func (m *OrchestratorService) createWindowWithPanels(sessionName string, dirPath string, window conf.WindowConfig) error {
 	target := fmt.Sprintf("%s:", sessionName)
 
 	if err := m.tmux.CreateWindow(target, window.WindowName, dirPath); err != nil {
@@ -124,7 +124,7 @@ func (m *MultiplexerService) createWindowWithPanels(sessionName string, dirPath 
 	return nil
 }
 
-func (m *MultiplexerService) setupPanels(sessionName, windowName, dirPath string, panels []conf.PanelConfig) error {
+func (m *OrchestratorService) setupPanels(sessionName, windowName, dirPath string, panels []conf.PanelConfig) error {
 	if len(panels) == 0 {
 		return nil
 	}
@@ -163,7 +163,7 @@ func (m *MultiplexerService) setupPanels(sessionName, windowName, dirPath string
 	return nil
 }
 
-func (m *MultiplexerService) findPrimaryWindow(windows []conf.WindowConfig) string {
+func (m *OrchestratorService) findPrimaryWindow(windows []conf.WindowConfig) string {
 	for _, window := range windows {
 		if window.Primary != nil && *window.Primary {
 			return window.WindowName
