@@ -120,20 +120,22 @@ func (s *SearchPort) Update(msg tea.Msg) (*SearchPort, tea.Cmd) {
 }
 
 func (s *SearchPort) View() string {
+	filler := lipgloss.NewStyle().
+		Width(s.Width()).
+		Height(s.Height() - 1 - 1 - len(s.list.Items())).
+		Render("")
+
 	footer := lipgloss.NewStyle().
 		Width(s.Width()).
 		Render("Search: " + s.searchInput.View())
 
 	listStyle := lipgloss.NewStyle().
 		Width(s.Width()).
-		Height(s.Height() - 1 - 1).
 		Render(s.list.View())
-	
-	listBlock := lipgloss.PlaceVertical(120, lipgloss.Bottom, listStyle)
-
 
 	return lipgloss.JoinHorizontal(lipgloss.Bottom,
-		listBlock,
+		filler,
+		listStyle,
 		footer,
 		s.help.View(s.keymap),
 	)
