@@ -1,12 +1,7 @@
 package app
 
 import (
-	"fmt"
-	"io"
-	"strings"
-
 	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -18,39 +13,12 @@ var (
 	itemStyle         = lipgloss.NewStyle().PaddingLeft(2)
 )
 
-type item string
-
-func (i item) FilterValue() string { return "" }
-
-type itemDelegate struct{}
-
-func (d itemDelegate) Height() int                             { return 1 }
-func (d itemDelegate) Spacing() int                            { return 0 }
-func (d itemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
-func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	i, ok := listItem.(item)
-	if !ok {
-		return
-	}
-
-	str := fmt.Sprintf("%d. %s", index+1, i)
-
-	fn := itemStyle.Render
-	if index == m.Index() {
-		fn = func(s ...string) string {
-			return selectedItemStyle.Render("> " + strings.Join(s, " "))
-		}
-	}
-
-	fmt.Fprint(w, fn(str))
-}
-
 type SearchPort struct {
 	viewport    viewport.Model
 	keymap      *keymap
 	help        help.Model
 	searchInput textinput.Model
-	list        list.Model
+	list        *searchList
 }
 
 func newSearchPort(width, height int) *SearchPort {
@@ -64,29 +32,25 @@ func newSearchPort(width, height int) *SearchPort {
 	ti.CharLimit = 50
 	ti.Width = 20
 
-	items := []list.Item{
-		item("Ramen"),
-		item("Tomato Soup"),
-		item("Hamburgers"),
-		item("Cheeseburgers"),
-		item("Currywurst"),
-		item("Okonomiyaki"),
-		item("Pasta"),
-		item("Fillet Mignon"),
-		item("Caviar"),
-		item("Just Wine"),
+	items := []string{
+		"Ramen",
+		"Tomato Soup",
+		"Hamburgers",
+		"Cheeseburgers",
+		"Currywurst",
+		"Okonomiyaki",
+		"Pasta",
+		"Fillet Mignon",
+		"Caviar",
+		"Just Wine",
 	}
-
-	list := list.New(items, itemDelegate{}, width, height)
-	list.SetShowHelp(false)
-	list.SetShowTitle(false)
 
 	s := &SearchPort{
 		viewport:    viewport,
 		keymap:      keymap,
 		help:        help,
 		searchInput: ti,
-		list:        list,
+		list:        newSearchList(items),
 	}
 
 	return s
@@ -114,29 +78,28 @@ func (s *SearchPort) Update(msg tea.Msg) (*SearchPort, tea.Cmd) {
 
 	s.viewport, cmd = s.viewport.Update(msg)
 	s.searchInput, cmd = s.searchInput.Update(msg)
-	s.list, cmd = s.list.Update(msg)
+	s.list.Update(msg)
 
 	return s, cmd
 }
 
 func (s *SearchPort) View() string {
-	filler := lipgloss.NewStyle().
-		Width(s.Width()).
-		Height(s.Height() - 1 - 1 - len(s.list.Items())).
-		Render("")
-
 	footer := lipgloss.NewStyle().
 		Width(s.Width()).
 		Render("Search: " + s.searchInput.View())
 
-	listStyle := lipgloss.NewStyle().
-		Width(s.Width()).
-		Render(s.list.View())
+	helpView := s.help.View(s.keymap)
+	footerHeight := lipgloss.Height(footer)
+	helpHeight := lipgloss.Height(helpView)
 
-	return lipgloss.JoinHorizontal(lipgloss.Bottom,
-		filler,
-		listStyle,
+	availableHeight := max(s.Height()-footerHeight-helpHeight, 0)
+
+	s.list.SetWidth(s.Width())
+	listArea := s.list.View(availableHeight)
+
+	return lipgloss.JoinVertical(lipgloss.Top,
+		listArea,
 		footer,
-		s.help.View(s.keymap),
+		helpView,
 	)
 }
