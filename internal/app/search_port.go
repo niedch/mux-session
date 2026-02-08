@@ -78,6 +78,7 @@ func (s *SearchPort) Update(msg tea.Msg) (*SearchPort, tea.Cmd) {
 
 	s.viewport, cmd = s.viewport.Update(msg)
 	s.searchInput, cmd = s.searchInput.Update(msg)
+	s.list.SetSearch(s.searchInput.Value())
 	s.list.Update(msg)
 
 	return s, cmd

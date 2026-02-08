@@ -6,8 +6,8 @@ import (
 	"github.com/niedch/mux-session/internal/dataproviders"
 )
 
-func filterItems(items []dataproviders.Item, query string) []item {
-	var result []item
+func filterItems(items []dataproviders.Item, query string) []listItem {
+	var result []listItem
 	queryRunes := []rune(strings.ToLower(query))
 
 	for i, dpItem := range items {
@@ -25,7 +25,7 @@ func filterItems(items []dataproviders.Item, query string) []item {
 		}
 
 		if queryIndex == len(queryRunes) {
-			result = append(result, item{text: itemText, index: i, matches: matches})
+			result = append(result, listItem{text: itemText, index: i, matches: matches})
 		}
 	}
 	return result
