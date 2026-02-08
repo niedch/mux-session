@@ -4,10 +4,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/niedch/mux-session/internal/dataproviders"
+	"github.com/niedch/mux-session/internal/previewproviders"
 	"golang.org/x/term"
 )
 
@@ -41,11 +41,12 @@ func Run(dataProvider dataproviders.DataProvider) (*dataproviders.Item, error) {
 }
 
 type model struct {
-	searchPort *searchPort
-	preview    *viewport.Model
-	selected   *dataproviders.Item
-	width      int
-	height     int
+	searchPort    *searchPort
+	previewPort   *previewPort
+	selected      *dataproviders.Item
+	lastSelection *dataproviders.Item
+	width         int
+	height        int
 }
 
 func initialModel(items []dataproviders.Item) model {
@@ -61,19 +62,32 @@ func initialModel(items []dataproviders.Item) model {
 	leftVpWidth := availableWidth / 2
 	rightVpWidth := availableWidth - leftVpWidth
 
-	previewPort := viewport.New(rightVpWidth, h)
+	// Create the README preview provider
+	readmeProvider, err := previewproviders.NewReadmePreviewProvider(rightVpWidth)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	pp := newPreviewPort(readmeProvider, rightVpWidth, h)
 
 	return model{
-		searchPort: newSearchPort(items, leftVpWidth, h),
-		preview:    &previewPort,
+		searchPort:  newSearchPort(items, leftVpWidth, h),
+		previewPort: pp,
 	}
 }
 
 func (m model) Init() tea.Cmd {
+	// Load initial README if items exist
+	if item := m.searchPort.GetSelected(); item != nil {
+		m.lastSelection = item
+		m.previewPort.LoadItem(item)
+	}
 	return m.searchPort.textInput.Focus()
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -90,19 +104,32 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		sepWidth := 1
 		availableWidth := msg.Width - sepWidth
 		leftVpWidth := availableWidth / 2
+		rightVpWidth := availableWidth - leftVpWidth
 
 		m.searchPort.SetSize(leftVpWidth, msg.Height)
-		m.preview.Width = availableWidth - leftVpWidth
-		m.preview.Height = msg.Height
+		m.previewPort.SetSize(rightVpWidth, msg.Height)
 	}
 
+	// Update searchPort first (this moves the cursor)
 	cmd := m.searchPort.Update(msg)
-	return m, cmd
+	cmds = append(cmds, cmd)
+
+	// Now check if selection changed and update preview
+	currentSelection := m.searchPort.GetSelected()
+	if currentSelection != nil && (m.lastSelection == nil || currentSelection.Id != m.lastSelection.Id) {
+		m.lastSelection = currentSelection
+		m.previewPort.LoadItem(currentSelection)
+	}
+
+	cmd = m.previewPort.Update(msg)
+	cmds = append(cmds, cmd)
+
+	return m, tea.Batch(cmds...)
 }
 
 func (m model) View() string {
 	searchView := rightBorderStyle.Width(m.searchPort.width + 1).Render(m.searchPort.View())
-	rightView := m.preview.View()
+	previewView := m.previewPort.View()
 
-	return lipgloss.JoinHorizontal(lipgloss.Top, searchView, rightView)
+	return lipgloss.JoinHorizontal(lipgloss.Top, searchView, previewView)
 }
