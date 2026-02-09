@@ -38,5 +38,5 @@ Feature: Environment Variable Management
       export | grep MY_PROJECT_VAR
       """
     Then I should see the following items in output:
-      | item                            |
-      | MY_PROJECT_VAR=production_value |
+      | item                                  |
+      | MY_PROJECT_VAR=("?production_value"?) |
