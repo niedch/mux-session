@@ -6,6 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/niedch/mux-session/internal/conf"
 	"github.com/niedch/mux-session/internal/dataproviders"
 	"github.com/niedch/mux-session/internal/previewproviders"
 	"golang.org/x/term"
@@ -21,13 +22,25 @@ var (
 		Border(lipgloss.NormalBorder(), false, true, false, false)
 )
 
-func Run(dataProvider dataproviders.DataProvider) (*dataproviders.Item, error) {
+func Run(dataProvider dataproviders.DataProvider, config *conf.Config) (*dataproviders.Item, error) {
 	items, err := dataProvider.GetItems()
 	if err != nil {
 		return nil, err
 	}
 
-	p := tea.NewProgram(initialModel(items), tea.WithAltScreen())
+	w, h, err := term.GetSize(int(os.Stdout.Fd()))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	leftVpWidth, rightVpWidth := calculateLayout(w)
+
+	previewProvider, err := previewproviders.CreatePreviewProvider(config, rightVpWidth)
+	if err != nil {
+		return nil, err
+	}
+
+	p := tea.NewProgram(initialModel(items, previewProvider, leftVpWidth, rightVpWidth, h), tea.WithAltScreen())
 	m, err := p.Run()
 	if err != nil {
 		return nil, err
@@ -49,26 +62,8 @@ type model struct {
 	height        int
 }
 
-func initialModel(items []dataproviders.Item) model {
-	w, h, err := term.GetSize(int(os.Stdout.Fd()))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	sepWidth := 1
-	availableWidth := w - sepWidth
-
-	// Split available space
-	leftVpWidth := availableWidth / 2
-	rightVpWidth := availableWidth - leftVpWidth
-
-	// Create the README preview provider
-	readmeProvider, err := previewproviders.NewReadmePreviewProvider(rightVpWidth)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	pp := newPreviewPort(readmeProvider, rightVpWidth, h)
+func initialModel(items []dataproviders.Item, provider previewproviders.PreviewProvider, leftVpWidth, rightVpWidth, h int) model {
+	pp := newPreviewPort(provider, rightVpWidth, h)
 
 	return model{
 		searchPort:  newSearchPort(items, leftVpWidth, h),
@@ -100,11 +95,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-
-		sepWidth := 1
-		availableWidth := msg.Width - sepWidth
-		leftVpWidth := availableWidth / 2
-		rightVpWidth := availableWidth - leftVpWidth
+		leftVpWidth, rightVpWidth := calculateLayout(m.width)
 
 		m.searchPort.SetSize(leftVpWidth, msg.Height)
 		m.previewPort.SetSize(rightVpWidth, msg.Height)
@@ -132,4 +123,12 @@ func (m model) View() string {
 	previewView := m.previewPort.View()
 
 	return lipgloss.JoinHorizontal(lipgloss.Top, searchView, previewView)
+}
+
+func calculateLayout(width int) (leftVpWidth, rightVpWidth int) {
+	sepWidth := 1
+	availableWidth := width - sepWidth
+	leftVpWidth = availableWidth / 2
+	rightVpWidth = availableWidth - leftVpWidth
+	return
 }

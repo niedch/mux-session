@@ -36,7 +36,6 @@ set-option -g default-shell /bin/zsh
 bind-key f run-shell "tmux neww mux-session"
 ```
 
-
 ## Configuration
 
 Create a configuration file at `$XDG_CONFIG/mux-session/config.toml` (typically `~/.config/mux-session/config.toml`).
@@ -46,6 +45,8 @@ Create a configuration file at `$XDG_CONFIG/mux-session/config.toml` (typically 
 ```toml
 # Directories to search for projects
 search_paths = [ "/home/nic/projects", "/home/nic/work" ]
+# Provider for the preview window. Options: "readme", "git". Default: "readme"
+preview_provider = "readme"
 
 # Default window configuration for all projects
 [default]
@@ -104,6 +105,7 @@ cmd = "lazydocker"
 
 #### Global Settings
 - `search_paths`: Array of directories to search for projects
+- `preview_provider`: Provider for the preview window. Options: "readme", "git". Default: "readme"
 
 #### Default Section `[default]`
 Defines window templates that apply to all projects unless overridden.

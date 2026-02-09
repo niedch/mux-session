@@ -29,9 +29,10 @@ type ProjectConfig struct {
 }
 
 type Config struct {
-	SearchPaths []string        `koanf:"search_paths"`
-	Default     ProjectConfig   `koanf:"default"`
-	Project     []ProjectConfig `koanf:"project"`
+	SearchPaths     []string        `koanf:"search_paths"`
+	PreviewProvider *string         `koanf:"preview_provider"`
+	Default         ProjectConfig   `koanf:"default"`
+	Project         []ProjectConfig `koanf:"project"`
 }
 
 func Load(configFile string) (*Config, error) {
