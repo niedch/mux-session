@@ -4,6 +4,7 @@ on:
   pull_request:                                                                               
     branches: [ "master" ]
 
+name: Build 
 jobs:
   build:
     runs-on: ubuntu-latest
