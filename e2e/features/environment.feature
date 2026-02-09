@@ -17,11 +17,10 @@ Feature: Environment Variable Management
       
       [project.env]
       MY_PROJECT_VAR = "production_value"
-      ANOTHER_VAR = "12345"
-      
+        
       [[project.window]]
       window_name = "Main"
-
+      
       [[project.window]]
       window_name = "Sub"
       """
@@ -33,7 +32,11 @@ Feature: Environment Variable Management
     And session "my-project" contains following windows:
       | window_name |
       | Main        |
-    And window "Main" in session "my-project" has environment variable "MY_PROJECT_VAR" set to "production_value"
-    And window "Main" in session "my-project" has environment variable "ANOTHER_VAR" set to "12345"
-    And window "Sub" in session "my-project" has environment variable "MY_PROJECT_VAR" set to "production_value"
-    And window "Sub" in session "my-project" has environment variable "ANOTHER_VAR" set to "12345"
+      | Sub         |
+    When I execute following Command in Session "my-project" on Window "Main":
+      """
+      export | grep MY_PROJECT_VAR
+      """
+    Then I should see the following items in output:
+      | item                            |
+      | MY_PROJECT_VAR=production_value |

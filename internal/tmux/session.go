@@ -16,6 +16,10 @@ func NewSession(opts ...OptFunc) error {
 	return Exec("new-session", opts...)
 }
 
+func WithEnvironment(key, value string) OptFunc {
+	return WithKeyValue("-e", key+"="+value)
+}
+
 func WithSession(name string) OptFunc {
 	return WithKeyValue("-s", name)
 }
