@@ -57,7 +57,7 @@ func (t *Tmux) SwitchSession(sessionName string) error {
 	return fmt.Errorf("session %s not found", sessionName)
 }
 
-func (t *Tmux) NewSession(sessionName string, firstWindowName string, workingDir string) error {
+func (t *Tmux) NewSession(sessionName string, firstWindowName string, workingDir string, env map[string]string) error {
 	// Create new session with first window
 	opts := append(t.commandOpts(),
 		WithDetached(),
@@ -65,18 +65,27 @@ func (t *Tmux) NewSession(sessionName string, firstWindowName string, workingDir
 		WithWindowName(firstWindowName),
 		WithWorkingDir(workingDir),
 	)
+
+	for k, v := range env {
+		opts = append(opts, WithEnvironment(k, v))
+	}
+
 	if err := NewSession(opts...); err != nil {
 		return fmt.Errorf("failed to create session %s: %w", sessionName, err)
 	}
 	return nil
 }
 
-func (t *Tmux) CreateWindow(target string, windowName string, workingDir string) error {
+func (t *Tmux) CreateWindow(target string, windowName string, workingDir string, env map[string]string) error {
 	opts := append(t.commandOpts(),
 		WithTarget(target),
 		WithWindowName(windowName),
 		WithWorkingDir(workingDir),
 	)
+
+	for k, v := range env {
+		opts = append(opts, WithEnvironment(k, v))
+	}
 
 	if err := NewWindow(opts...); err != nil {
 		return fmt.Errorf("failed to create window %s in session %s: %w", windowName, t.socket, err)
@@ -143,4 +152,3 @@ func (t *Tmux) FocusWindow(target string) error {
 
 	return nil
 }
-

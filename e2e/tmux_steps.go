@@ -192,7 +192,7 @@ func RegisterTmuxSteps(ctx *godog.ScenarioContext) {
 		target := fmt.Sprintf("%s:%s", sessionName, windowName)
 
 		// Wait for Session to initialized
-		time.Sleep(1 * time.Second)
+		time.Sleep(2 * time.Second)
 
 		// Send the command and Enter
 		cmd := executeTmuxCommand("tmux", "send-keys", "-t", target, cmdStr, "C-m")
@@ -201,7 +201,7 @@ func RegisterTmuxSteps(ctx *godog.ScenarioContext) {
 		}
 
 		// Wait for command execution
-		time.Sleep(1 * time.Second)
+		time.Sleep(500 * time.Millisecond)
 
 		// Capture pane content to allow verification
 		captureCmd := executeTmuxCommand("tmux", "capture-pane", "-p", "-t", target)

@@ -36,14 +36,8 @@ func (m *OrchestratorService) CreateSession(item *dataproviders.Item, projectCon
 	firstWindow := projectConfig.WindowConfig[0]
 
 	log.Printf("Creating Session %s\n", sessionName)
-	if err := m.tmux.NewSession(sessionName, firstWindow.WindowName, dirPath); err != nil {
+	if err := m.tmux.NewSession(sessionName, firstWindow.WindowName, dirPath, projectConfig.Env); err != nil {
 		return fmt.Errorf("Failed to create Session %s", sessionName)
-	}
-
-	if len(projectConfig.Env) > 0 {
-		if err := m.tmux.SetEnvironment(sessionName, projectConfig.Env); err != nil {
-			return fmt.Errorf("failed to set environment %s: %w", sessionName, err)
-		}
 	}
 
 	// Setup panels for first window if configured
@@ -55,7 +49,7 @@ func (m *OrchestratorService) CreateSession(item *dataproviders.Item, projectCon
 
 	// Create additional windows
 	for _, window := range projectConfig.WindowConfig[1:] {
-		if err := m.createWindowWithPanels(sessionName, dirPath, window); err != nil {
+		if err := m.createWindowWithPanels(sessionName, dirPath, window, projectConfig.Env); err != nil {
 			return err
 		}
 	}
@@ -99,10 +93,10 @@ func (m *OrchestratorService) SwitchSession(selected *dataproviders.Item) (bool,
 	return false, nil
 }
 
-func (m *OrchestratorService) createWindowWithPanels(sessionName string, dirPath string, window conf.WindowConfig) error {
+func (m *OrchestratorService) createWindowWithPanels(sessionName string, dirPath string, window conf.WindowConfig, env map[string]string) error {
 	target := fmt.Sprintf("%s:", sessionName)
 
-	if err := m.tmux.CreateWindow(target, window.WindowName, dirPath); err != nil {
+	if err := m.tmux.CreateWindow(target, window.WindowName, dirPath, env); err != nil {
 		return fmt.Errorf("failed to create window %s in session %s: %w", window.WindowName, sessionName, err)
 	}
 
