@@ -201,7 +201,7 @@ func RegisterTmuxSteps(ctx *godog.ScenarioContext) {
 		}
 
 		// Wait for command execution
-		time.Sleep(2 * time.Second)
+		time.Sleep(500 * time.Millisecond)
 
 		// Capture pane content to allow verification
 		captureCmd := executeTmuxCommand("tmux", "capture-pane", "-p", "-t", target)

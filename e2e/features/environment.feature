@@ -40,3 +40,10 @@ Feature: Environment Variable Management
     Then I should see the following items in output:
       | item                                  |
       | MY_PROJECT_VAR=("?production_value"?) |
+    When I execute following Command in Session "my-project" on Window "Sub":
+      """
+      export | grep MY_PROJECT_VAR
+      """
+    Then I should see the following items in output:
+      | item                                  |
+      | MY_PROJECT_VAR=("?production_value"?) |
