@@ -6,7 +6,7 @@ import (
 
 	"github.com/niedch/mux-session/internal/conf"
 	"github.com/niedch/mux-session/internal/dataproviders"
-	"github.com/niedch/mux-session/internal/multiplexer"
+	"github.com/niedch/mux-session/internal/orchestrator"
 	"github.com/niedch/mux-session/internal/tmux"
 	"github.com/spf13/cobra"
 )
@@ -44,7 +44,7 @@ The ID can be a session name or directory path.`,
 
 		log.Printf("Found item with id '%s', and display '%s'\n", item.Id, item.Display)
 		
-		multiService := multiplexer.NewMultiplexerService(tmux)
+		multiService := orchestrator.New(tmux)
 		projectConfig := config.GetProjectConfig(item.Id)
 
 		ok, err := multiService.SwitchSession(item)
