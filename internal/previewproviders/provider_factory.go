@@ -13,6 +13,7 @@ func CreatePreviewProvider(config *conf.Config, width int) (PreviewProvider, err
 
 	switch providerName {
 	case "readme":
+		provider, err = NewReadmePreviewProvider(width)
 	default:
 		provider, err = NewReadmePreviewProvider(width)
 	}
