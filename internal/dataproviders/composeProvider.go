@@ -38,7 +38,7 @@ func (dp *ComposeProvider) GetItems() ([]Item, error) {
 				continue
 			}
 
-			if dp.markDuplicates && !strings.HasPrefix(item.Display, "[TMUX]") {
+			if dp.markDuplicates && !strings.HasPrefix(item.Display, "[TMUX]") && !strings.HasPrefix(item.Display, "[w] ") {
 				item.Display = "[ ] " + item.Display
 			}
 			items = append(items, item)
