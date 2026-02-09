@@ -1,6 +1,6 @@
 # mux-session
 
-[![.github/workflows/go.yaml](https://github.com/niedch/mux-session/actions/workflows/go.yaml/badge.svg)](https://github.com/niedch/mux-session/actions/workflows/go.yaml)
+[![Build](https://github.com/niedch/mux-session/actions/workflows/go.yaml/badge.svg?branch=master)](https://github.com/niedch/mux-session/actions/workflows/go.yaml)
 
 An interactive tmux session manager that allows you to quickly navigate to project directories and create or switch to tmux sessions.
 
