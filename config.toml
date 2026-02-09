@@ -1,4 +1,5 @@
 search_paths = [ "/home/nic/projects" ]
+preview_provider = "git"
 
 [default]
 [[default.window]]
