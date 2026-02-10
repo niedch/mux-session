@@ -22,6 +22,14 @@ func RegisterGitSteps(ctx *godog.ScenarioContext) {
 
 		// The worktree directory that will be discovered
 		worktreeDir := filepath.Join(testCtx.tempDir, worktreeDirName)
+		worktreesDir := filepath.Join(worktreeDir, "worktrees")
+		if err := os.MkdirAll(worktreesDir, 0755); err != nil {
+			return fmt.Errorf("failed to create worktrees directory: %v", err)
+		}
+		worktreeSubDir := filepath.Join(worktreesDir, "my-worktree")
+		if err := os.MkdirAll(worktreeSubDir, 0755); err != nil {
+			return fmt.Errorf("failed to create worktree sub-directory: %v", err)
+		}
 
 		// Initialize git repo in the hidden main directory
 		if err := execGitCommand(mainRepoDir, "init"); err != nil {
@@ -49,7 +57,7 @@ func RegisterGitSteps(ctx *godog.ScenarioContext) {
 		}
 
 		// Create the worktree at the target directory
-		if err := execGitCommand(mainRepoDir, "worktree", "add", worktreeDir); err != nil {
+		if err := execGitCommand(mainRepoDir, "worktree", "add", worktreeSubDir); err != nil {
 			return fmt.Errorf("failed to create worktree: %v", err)
 		}
 

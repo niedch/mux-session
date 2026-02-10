@@ -30,7 +30,7 @@ var listSessionsCmd = &cobra.Command{
 
 		directoryProvider := dataproviders.NewDirectoryProvider(config.SearchPaths)
 		tmuxProvider := dataproviders.NewTmuxProvider(tmuxWrapper)
-		composedProvider := dataproviders.NewComposeProvider(directoryProvider, tmuxProvider).WithMarkDuplicates(true)
+		composedProvider := dataproviders.NewDeduplicatorProvider(directoryProvider, tmuxProvider).WithMarkDuplicates(true)
 
 		items, err := composedProvider.GetItems()
 		if err != nil {
@@ -43,7 +43,6 @@ var listSessionsCmd = &cobra.Command{
 			return
 		}
 
-		// Flatten items with tree structure and render
 		flattenedItems := tree.FlattenItems(items)
 		for _, item := range flattenedItems {
 			fmt.Println(item.Display)

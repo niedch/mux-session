@@ -1,11 +1,10 @@
 package dataproviders
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/niedch/mux-session/internal/git"
 )
 
 // DirectoryProvider implements DataProvider for directory browsing
@@ -37,28 +36,25 @@ func (dp *DirectoryProvider) GetItems() ([]Item, error) {
 			if !strings.HasPrefix(entry.Name(), ".") {
 				fullPath := filepath.Join(searchPath, entry.Name())
 
-				display := fullPath
-				isWorktree := false
-				g := git.NewGit(fullPath)
-				if g.IsGitRepository() {
-					var err error
-					isWorktree, err = g.IsWorktree()
-					if err == nil && isWorktree {
-						display = "[w] " + fullPath
-					}
+				display := "[ ] " + fullPath
+
+				containsWorktrees, _ := dp.hasWorktrees(fullPath)
+				if containsWorktrees {
+					display = "[w] " + fullPath
 				}
 
 				item := Item{
 					Id:         filepath.Base(fullPath),
 					Display:    display,
 					Path:       fullPath,
-					IsWorktree: isWorktree,
+					IsWorktree: containsWorktrees,
 				}
 
 				// If this is a worktree, scan for subdirectories
-				if isWorktree {
+				if containsWorktrees {
 					subItems := dp.getSubdirectories(fullPath)
 					if len(subItems) > 0 {
+						log.Printf("Adding SubItems %d to %s", len(subItems), item.Display)
 						item.SubItems = subItems
 					}
 				}
@@ -71,11 +67,26 @@ func (dp *DirectoryProvider) GetItems() ([]Item, error) {
 	return dirs, nil
 }
 
+func (dp *DirectoryProvider) hasWorktrees(parentPath string) (bool, error) {
+	worktreePath := filepath.Join(parentPath, "worktrees")
+	fileStats, err := os.Stat(worktreePath)
+	if err != nil {
+		return false, err
+	}
+
+	if fileStats.IsDir() {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 // getSubdirectories scans a directory for immediate subdirectories
 func (dp *DirectoryProvider) getSubdirectories(parentPath string) []Item {
 	var subItems []Item
+	worktreePath := filepath.Join(parentPath, "worktrees")
 
-	entries, err := os.ReadDir(parentPath)
+	entries, err := os.ReadDir(worktreePath)
 	if err != nil {
 		return subItems
 	}
@@ -85,24 +96,8 @@ func (dp *DirectoryProvider) getSubdirectories(parentPath string) []Item {
 			continue
 		}
 
-		// Skip hidden directories
-		if strings.HasPrefix(entry.Name(), ".") {
-			continue
-		}
-
-		subPath := filepath.Join(parentPath, entry.Name())
-
-		// Check if subdirectory is a git repository
-		g := git.NewGit(subPath)
-		isGitRepo := g.IsGitRepository()
-
-		display := "[ ] " + entry.Name() + "/"
-		if isGitRepo {
-			isWorktree, _ := g.IsWorktree()
-			if isWorktree {
-				display = "[w] " + entry.Name() + "/"
-			}
-		}
+		subPath := filepath.Join(worktreePath, entry.Name())
+		display := "[ ] " + entry.Name()
 
 		subItems = append(subItems, Item{
 			Id:         entry.Name(),
