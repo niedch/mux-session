@@ -38,7 +38,7 @@ func (dp *DirectoryProvider) GetItems() ([]Item, error) {
 
 				display := "[ ] " + fullPath
 
-				containsWorktrees, _ := dp.hasWorktrees(fullPath)
+				containsWorktrees, _ := HasWorktrees(fullPath)
 				if containsWorktrees {
 					display = "[w] " + fullPath
 				}
@@ -52,7 +52,7 @@ func (dp *DirectoryProvider) GetItems() ([]Item, error) {
 
 				// If this is a worktree, scan for subdirectories
 				if containsWorktrees {
-					subItems := dp.getSubdirectories(fullPath)
+					subItems := GetSubdirectories(fullPath)
 					if len(subItems) > 0 {
 						log.Printf("Adding SubItems %d to %s", len(subItems), item.Display)
 						item.SubItems = subItems
@@ -67,46 +67,3 @@ func (dp *DirectoryProvider) GetItems() ([]Item, error) {
 	return dirs, nil
 }
 
-func (dp *DirectoryProvider) hasWorktrees(parentPath string) (bool, error) {
-	worktreePath := filepath.Join(parentPath, "worktrees")
-	fileStats, err := os.Stat(worktreePath)
-	if err != nil {
-		return false, err
-	}
-
-	if fileStats.IsDir() {
-		return true, nil
-	}
-
-	return false, nil
-}
-
-// getSubdirectories scans a directory for immediate subdirectories
-func (dp *DirectoryProvider) getSubdirectories(parentPath string) []Item {
-	var subItems []Item
-	worktreePath := filepath.Join(parentPath, "worktrees")
-
-	entries, err := os.ReadDir(worktreePath)
-	if err != nil {
-		return subItems
-	}
-
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			continue
-		}
-
-		subPath := filepath.Join(worktreePath, entry.Name())
-		display := "[ ] " + entry.Name()
-
-		subItems = append(subItems, Item{
-			Id:         entry.Name(),
-			Display:    display,
-			Path:       subPath,
-			IsWorktree: false,
-			TreeLevel:  1,
-		})
-	}
-
-	return subItems
-}
