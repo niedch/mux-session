@@ -14,24 +14,13 @@ func RegisterGitSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the directory "([^"]*)" is a git worktree$`, func(ctx context.Context, worktreeDirName string) error {
 		testCtx := ctx.Value("testCtx").(*testContext)
 
-		// Create a hidden main repository that will own the worktree
-		mainRepoDir := filepath.Join(testCtx.tempDir, ".main-repo")
+		// The directory that will be discovered. This is the main repository.
+		mainRepoDir := filepath.Join(testCtx.tempDir, worktreeDirName)
 		if err := os.MkdirAll(mainRepoDir, 0755); err != nil {
 			return fmt.Errorf("failed to create main repo directory: %v", err)
 		}
 
-		// The worktree directory that will be discovered
-		worktreeDir := filepath.Join(testCtx.tempDir, worktreeDirName)
-		worktreesDir := filepath.Join(worktreeDir, "worktrees")
-		if err := os.MkdirAll(worktreesDir, 0755); err != nil {
-			return fmt.Errorf("failed to create worktrees directory: %v", err)
-		}
-		worktreeSubDir := filepath.Join(worktreesDir, "my-worktree")
-		if err := os.MkdirAll(worktreeSubDir, 0755); err != nil {
-			return fmt.Errorf("failed to create worktree sub-directory: %v", err)
-		}
-
-		// Initialize git repo in the hidden main directory
+		// Initialize git repo in the main directory
 		if err := execGitCommand(mainRepoDir, "init"); err != nil {
 			return fmt.Errorf("failed to init git repo: %v", err)
 		}
@@ -56,7 +45,8 @@ func RegisterGitSteps(ctx *godog.ScenarioContext) {
 			return fmt.Errorf("failed to commit: %v", err)
 		}
 
-		// Create the worktree at the target directory
+		// Create the worktree in a separate directory
+		worktreeSubDir := filepath.Join(testCtx.tempDir, "my-worktree")
 		if err := execGitCommand(mainRepoDir, "worktree", "add", worktreeSubDir); err != nil {
 			return fmt.Errorf("failed to create worktree: %v", err)
 		}
