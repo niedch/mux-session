@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	TreeBranch   = "├── "
-	TreeLast     = "└── "
-	TreeVertical = "│   "
-	TreeEmpty    = "    "
+	TreeBranch   = " ├── "
+	TreeLast     = " └── "
+	TreeVertical = " │   "
+	TreeEmpty    = "     "
 )
 
 type Renderer struct {
