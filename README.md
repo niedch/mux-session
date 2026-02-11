@@ -13,6 +13,13 @@ An interactive tmux session manager that allows you to quickly navigate to proje
 
 ## Installation
 
+### Quick Install
+
+```bash
+curl -sL https://raw.githubusercontent.com/niedch/mux-session/master/install.sh | bash
+```
+
+
 ### Prerequisites
 
 - Go 1.25.5 or later
