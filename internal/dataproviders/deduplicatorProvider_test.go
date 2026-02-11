@@ -37,11 +37,11 @@ func TestDeduplicatorProvider_GetItems_NoDuplicates(t *testing.T) {
 	}
 
 	expected := []Item{
+		{Id: "mux1", Display: "mux1"},
 		{Id: "dir1", Display: "[ ] dir1"},
 		{Id: "dir2", Display: "[ ] dir2", SubItems: []Item{
 			{Id: "dir3", Display: "[ ] dir3"},
 		}},
-		{Id: "mux1", Display: "mux1"},
 	}
 
 	if !reflect.DeepEqual(result, expected) {
@@ -72,11 +72,11 @@ func TestDeduplicatorProvider_GetItems_WithDuplicates(t *testing.T) {
 	}
 
 	expected := []Item{
+		{Id: "mux1", Display: "mux1"},
 		{Id: "dir1", Display: "[ ] dir1"},
 		{Id: "dir2", Display: "[ ] dir2", SubItems: []Item{
 			{Id: "dir3", Display: "[ ] dir3"},
 		}},
-		{Id: "mux1", Display: "mux1"},
 	}
 
 	if !reflect.DeepEqual(result, expected) {
@@ -109,12 +109,12 @@ func TestDeduplicatorProvider_GetItems_MarkDuplicates(t *testing.T) {
 	}
 
 	expected := []Item{
+		{Id: "mux1", Display: "mux1"},
 		{Id: "dir1", Display: "[x] dir1"},
 		{Id: "dir2", Display: "[ ] dir2", SubItems: []Item{
 			{Id: "dir3", Display: "[x] dir3"},
 		}},
 		{Id: "dir4", Display: "[ ] dir4"},
-		{Id: "mux1", Display: "mux1"},
 	}
 
 	if !reflect.DeepEqual(result, expected) {
@@ -141,8 +141,8 @@ func TestDeduplicatorProvider_GetItems_MarkDuplicates_NoDuplicates(t *testing.T)
 	}
 
 	expected := []Item{
-		{Id: "dir1", Display: "[ ] dir1"},
 		{Id: "mux1", Display: "mux1"},
+		{Id: "dir1", Display: "[ ] dir1"},
 	}
 
 	if !reflect.DeepEqual(result, expected) {
