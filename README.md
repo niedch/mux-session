@@ -11,6 +11,10 @@ An interactive tmux session manager that allows you to quickly navigate to proje
 - **Project-Specific Configuration**: Define custom window layouts and commands per project
 - **Default Window Templates**: Set up default window configurations for all projects
 
+## Demo
+
+![mux-session-demo]( ./assets/mux-session-demo.gif )
+
 ## Installation
 
 ### Quick Install
