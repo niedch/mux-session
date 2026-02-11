@@ -200,4 +200,5 @@ make e2e
 - [x] Full e2e tests
 - [x] Worktree support
 - [x] Display Project info in side panel
+- [ ] Create Init Script for quick installation
 
