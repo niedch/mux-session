@@ -1,6 +1,6 @@
 module github.com/niedch/mux-session
 
-go 1.25.5
+go 1.26
 
 require (
 	github.com/adrg/xdg v0.5.3
