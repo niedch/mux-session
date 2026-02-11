@@ -6,6 +6,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/niedch/mux-session/internal/dataproviders"
+	"github.com/niedch/mux-session/internal/tree"
 )
 
 type listItem struct {
@@ -15,9 +16,10 @@ type listItem struct {
 }
 
 type list struct {
-	items    []dataproviders.Item
-	filtered []listItem
-	cursor   int
+	items        []dataproviders.Item
+	displayItems []dataproviders.Item
+	filtered     []listItem
+	cursor       int
 }
 
 func newList(items []dataproviders.Item) *list {
@@ -32,7 +34,15 @@ func newList(items []dataproviders.Item) *list {
 }
 
 func (l *list) filter(query string) {
-	l.filtered = filterItems(l.items, query)
+	var itemsToFilter []dataproviders.Item
+	if query == "" {
+		itemsToFilter = l.items
+	} else {
+		itemsToFilter = FilterTree(l.items, query)
+	}
+
+	l.displayItems = tree.FlattenItems(itemsToFilter)
+	l.filtered = createListItems(l.displayItems, query)
 }
 
 func (l *list) updateFilter(query string) {
@@ -57,8 +67,8 @@ func (l *list) moveDown() {
 }
 
 func (l *list) getSelected() *dataproviders.Item {
-	if len(l.filtered) > 0 {
-		return &l.items[l.filtered[l.cursor].index]
+	if len(l.filtered) > 0 && l.cursor >= 0 && l.cursor < len(l.filtered) {
+		return &l.displayItems[l.filtered[l.cursor].index]
 	}
 	return nil
 }

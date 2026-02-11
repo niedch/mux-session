@@ -1,10 +1,6 @@
 package tree
 
 import (
-	"fmt"
-	"os"
-	"strings"
-
 	"github.com/niedch/mux-session/internal/dataproviders"
 )
 
@@ -95,22 +91,3 @@ func FlattenItems(items []dataproviders.Item) []dataproviders.Item {
 	return result
 }
 
-func GetSubdirectories(path string) ([]string, error) {
-	entries, err := os.ReadDir(path)
-	if err != nil {
-		return nil, err
-	}
-
-	var dirs []string
-	for _, entry := range entries {
-		if entry.IsDir() && !strings.HasPrefix(entry.Name(), ".") {
-			dirs = append(dirs, entry.Name())
-		}
-	}
-
-	return dirs, nil
-}
-
-func FormatSubdirectory(name string) string {
-	return fmt.Sprintf("[ ] %s/", name)
-}

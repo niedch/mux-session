@@ -9,7 +9,6 @@ import (
 	"github.com/niedch/mux-session/internal/conf"
 	"github.com/niedch/mux-session/internal/dataproviders"
 	"github.com/niedch/mux-session/internal/previewproviders"
-	"github.com/niedch/mux-session/internal/tree"
 	"golang.org/x/term"
 )
 
@@ -29,8 +28,6 @@ func Run(dataProvider dataproviders.DataProvider, config *conf.Config) (*datapro
 		return nil, err
 	}
 
-	flattenedList := tree.FlattenItems(items)
-
 	w, h, err := term.GetSize(int(os.Stdout.Fd()))
 	if err != nil {
 		log.Fatal(err)
@@ -43,7 +40,7 @@ func Run(dataProvider dataproviders.DataProvider, config *conf.Config) (*datapro
 		return nil, err
 	}
 
-	p := tea.NewProgram(initialModel(flattenedList, previewProvider, leftVpWidth, rightVpWidth, h), tea.WithAltScreen())
+	p := tea.NewProgram(initialModel(items, previewProvider, leftVpWidth, rightVpWidth, h), tea.WithAltScreen())
 	m, err := p.Run()
 	if err != nil {
 		return nil, err
