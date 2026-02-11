@@ -1,6 +1,7 @@
 package dataproviders
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -35,14 +36,34 @@ func (dp *DirectoryProvider) GetItems() ([]Item, error) {
 			if !strings.HasPrefix(entry.Name(), ".") {
 				fullPath := filepath.Join(searchPath, entry.Name())
 
-				dirs = append(dirs, Item{
-					Id:      filepath.Base(fullPath),
-					Display: fullPath,
-					Path:    fullPath,
-				})
+				display := "[ ] " + fullPath
+
+				containsWorktrees, _ := HasWorktrees(fullPath)
+				if containsWorktrees {
+					display = "[w] " + fullPath
+				}
+
+				item := Item{
+					Id:         filepath.Base(fullPath),
+					Display:    display,
+					Path:       fullPath,
+					IsWorktree: containsWorktrees,
+				}
+
+				// If this is a worktree, scan for subdirectories
+				if containsWorktrees {
+					subItems := GetSubdirectories(fullPath)
+					if len(subItems) > 0 {
+						log.Printf("Adding SubItems %d to %s", len(subItems), item.Display)
+						item.SubItems = subItems
+					}
+				}
+
+				dirs = append(dirs, item)
 			}
 		}
 	}
 
 	return dirs, nil
 }
+

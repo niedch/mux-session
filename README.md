@@ -9,7 +9,6 @@ An interactive tmux session manager that allows you to quickly navigate to proje
 - **Interactive Directory Selection**: Uses fzf for fast directory navigation from configured search paths
 - **Automatic Session Management**: Creates new tmux sessions or switches to existing ones
 - **Project-Specific Configuration**: Define custom window layouts and commands per project
-- **Environment Variables**: Set project-specific environment variables
 - **Default Window Templates**: Set up default window configurations for all projects
 
 ## Installation
@@ -18,7 +17,6 @@ An interactive tmux session manager that allows you to quickly navigate to proje
 
 - Go 1.25.5 or later
 - tmux
-- fzf
 
 ### Build from Source
 
@@ -191,7 +189,6 @@ make e2e
 - `make e2e` - Run end-to-end tests
 - `make clean` - Clean build artifacts
 - `make deps` - Download and tidy dependencies
-- `make dev` - Run directly without building binary
 - `make install` - Install binary globally with `go install`
 - `make all` - Run tests then build
 ```
@@ -201,6 +198,7 @@ make e2e
 - [x] Environment Variables support
 - [x] Tmux existing sessions
 - [x] Full e2e tests
-- [ ] Worktree support
+- [x] Worktree support
 - [x] Display Project info in side panel
+- [ ] Create Init Script for quick installation
 

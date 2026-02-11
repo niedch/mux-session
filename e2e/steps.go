@@ -51,6 +51,7 @@ func InitializeScenario(ctx *godog.ScenarioContext) {
 
 	RegisterMuxSessionSteps(ctx)
 	RegisterTmuxSteps(ctx)
+	RegisterGitSteps(ctx)
 }
 
 func executeCommandStep(name string, args ...string) func(ctx context.Context) error {

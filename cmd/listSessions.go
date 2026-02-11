@@ -7,6 +7,7 @@ import (
 	"github.com/niedch/mux-session/internal/conf"
 	"github.com/niedch/mux-session/internal/dataproviders"
 	"github.com/niedch/mux-session/internal/tmux"
+	"github.com/niedch/mux-session/internal/tree"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +30,7 @@ var listSessionsCmd = &cobra.Command{
 
 		directoryProvider := dataproviders.NewDirectoryProvider(config.SearchPaths)
 		tmuxProvider := dataproviders.NewTmuxProvider(tmuxWrapper)
-		composedProvider := dataproviders.NewComposeProvider(directoryProvider, tmuxProvider).WithMarkDuplicates(true)
+		composedProvider := dataproviders.NewDeduplicatorProvider(directoryProvider, tmuxProvider).WithMarkDuplicates(true)
 
 		items, err := composedProvider.GetItems()
 		if err != nil {
@@ -42,7 +43,8 @@ var listSessionsCmd = &cobra.Command{
 			return
 		}
 
-		for _, item := range items {
+		flattenedItems := tree.FlattenItems(items)
+		for _, item := range flattenedItems {
 			fmt.Println(item.Display)
 		}
 	},

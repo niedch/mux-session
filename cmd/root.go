@@ -41,10 +41,11 @@ directory name as the session name.`,
 
 		multiService := orchestrator.New(tmux)
 
-		provider := dataproviders.NewDirectoryProvider(config.SearchPaths)
+		directoryProvider := dataproviders.NewDirectoryProvider(config.SearchPaths)
 		tmuxProvider := dataproviders.NewTmuxProvider(tmux)
 
-		selected, err := fzf.Run(dataproviders.NewComposeProvider(provider, tmuxProvider).WithMarkDuplicates(true), config)
+		selected, err := fzf.Run(dataproviders.NewDeduplicatorProvider(directoryProvider, tmuxProvider).WithMarkDuplicates(true), config)
+
 		if err != nil {
 			log.Fatal(err)
 		}

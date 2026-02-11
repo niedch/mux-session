@@ -4,10 +4,6 @@ func ListSessions(opts ...OptFunc) ([]string, error) {
 	return OutputLines("list-sessions", opts...)
 }
 
-func ListWindows(opts ...OptFunc) ([]string, error) {
-	return OutputLines("list-windows", opts...)
-}
-
 func WithFormat(format string) OptFunc {
 	return WithKeyValue("-F", format)
 }
