@@ -13,19 +13,18 @@ An interactive tmux session manager that allows you to quickly navigate to proje
 
 ## Installation
 
-### Prerequisites
-
-- Go 1.25.5 or later
-- tmux
-
-### Build from Source
+### Quick Install
 
 ```bash
-# Clone the repository
-git clone https://github.com/niedch/mux-session.git
-cd mux-session
-make install
+sudo curl -sL https://raw.githubusercontent.com/niedch/mux-session/master/install.sh | bash
+mux-session init
 ```
+
+
+### Prerequisites
+
+- tmux
+
 
 **Add following lines to .tmux.config**
 
@@ -170,6 +169,13 @@ mux-session
 ```
 
 ## Development
+
+```bash
+# Clone the repository
+git clone https://github.com/niedch/mux-session.git
+cd mux-session
+make install
+```
 
 ```bash
 # Run in development mode
