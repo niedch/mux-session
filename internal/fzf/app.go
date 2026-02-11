@@ -63,11 +63,9 @@ type model struct {
 }
 
 func initialModel(items []dataproviders.Item, provider previewproviders.PreviewProvider, leftVpWidth, rightVpWidth, h int) model {
-	pp := newPreviewPort(provider, rightVpWidth, h)
-
 	return model{
 		searchPort:  newSearchPort(items, leftVpWidth, h),
-		previewPort: pp,
+		previewPort: newPreviewPort(provider, rightVpWidth, h),
 	}
 }
 

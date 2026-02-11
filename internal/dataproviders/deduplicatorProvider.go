@@ -41,7 +41,7 @@ func (dp *DeduplicatorProvider) GetItems() ([]Item, error) {
 	directoryIds := flattenItems(directoryItems)
 	filteredMultiplexerItems := filterItems(multiplexerItems, directoryIds)
 
-	return append(directoryItems, filteredMultiplexerItems...), nil
+	return append(filteredMultiplexerItems, directoryItems...), nil
 }
 
 func (dp *DeduplicatorProvider) markAndFilterItems() ([]Item, error) {
@@ -60,7 +60,7 @@ func (dp *DeduplicatorProvider) markAndFilterItems() ([]Item, error) {
 	directoryIds := flattenItems(directoryItems)
 	filteredMultiplexerItems := filterItems(multiplexerItems, directoryIds)
 
-	return append(directoryItems, filteredMultiplexerItems...), nil
+	return append(filteredMultiplexerItems, directoryItems...), nil
 }
 
 func flattenItems(items []Item) map[string]bool {
