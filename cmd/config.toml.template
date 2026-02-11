@@ -1,24 +1,29 @@
-search_paths = [ "/home/nic/projects" ]
+# Which paths should be searched for projects
+search_paths = [ {{ .SearchPaths }} ]
+# Preview Window config
 preview_provider = "readme"
 
+# Default Window Setup
 [default]
 [[default.window]]
-window_name = "VIM"
+window_name = "vim"
 cmd = "vim ."
 
 [[default.window]]
 window_name = "Runner"
 cmd = """
-lazydocker
+echo "Execute your commands here"
 """
 
 [[default.window]]
-window_name = "OpenCode"
+window_name = "AI"
 cmd = """
-opencode .
+echo "Run you favorite Agent here"
 """
 
 
+# Project specific Configuration
+############## mux-session ############
 [[project]]
 name = "mux-session"
 
@@ -28,6 +33,7 @@ MUX-SESSION_TEST = "mux-tester"
 [[project.window]]
 window_name = "nvim"
 cmd = "vim ."
+
 
 [[project.window]]
 window_name = "perf"
@@ -40,3 +46,10 @@ cmd = "top"
 panel_direction = "h"
 cmd = "top"
 
+
+[[project.window]]
+window_name = "Fetcher"
+cmd = """
+git fetch
+exit
+"""
