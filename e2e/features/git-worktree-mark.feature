@@ -17,5 +17,6 @@ Feature: Mux Session mark git worktrees
     Then I should see the following items in output:
       | item                              |
       | \[ \] .*/regular-project          |
-      | \[w\] .*/main-repo                 |
-      | \[TMUX\] test-session              |
+      | \[w\] .*/main-repo                |
+      |  └── \[ \] my-worktree            |
+      | \[TMUX\] test-session             |
