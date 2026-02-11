@@ -4,10 +4,6 @@ func DisplayMessage(opts ...OptFunc) (string, error) {
 	return Output("display-message", opts...)
 }
 
-func CurrentSession() (string, error) {
-	return DisplayMessage(WithPrint(), WithFormat("#S"))
-}
-
 func WithPrint() OptFunc {
 	return WithFlag("-p")
 }

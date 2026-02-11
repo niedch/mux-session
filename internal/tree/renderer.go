@@ -11,39 +11,6 @@ const (
 	TreeEmpty    = "     "
 )
 
-type Renderer struct {
-	items []dataproviders.Item
-}
-
-func NewRenderer(items []dataproviders.Item) *Renderer {
-	return &Renderer{items: items}
-}
-
-func (r *Renderer) Render() []string {
-	var output []string
-	for _, item := range r.items {
-		output = append(output, r.renderItem(item, 0, true, true))
-	}
-	return output
-}
-
-func (r *Renderer) renderItem(item dataproviders.Item, level int, isLast bool, isRoot bool) string {
-	var prefix string
-
-	if !isRoot {
-		for i := 0; i < level-1; i++ {
-			prefix += TreeVertical
-		}
-		if isLast {
-			prefix += TreeLast
-		} else {
-			prefix += TreeBranch
-		}
-	}
-
-	return prefix + item.Display
-}
-
 func GeneratePrefix(level int, isLast bool) string {
 	if level == 0 {
 		return ""
@@ -90,4 +57,3 @@ func FlattenItems(items []dataproviders.Item) []dataproviders.Item {
 
 	return result
 }
-
