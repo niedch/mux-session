@@ -203,12 +203,3 @@ make e2e
 - `make all` - Run tests then build
 ```
 
-## TODOs
-
-- [x] Environment Variables support
-- [x] Tmux existing sessions
-- [x] Full e2e tests
-- [x] Worktree support
-- [x] Display Project info in side panel
-- [ ] Create Init Script for quick installation
-
