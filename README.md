@@ -13,7 +13,7 @@ An interactive tmux session manager that allows you to quickly navigate to proje
 
 ## Demo
 
-![./assets/mux-session-demo.mp4]
+![mux-session-demo]( ./assets/mux-session-demo.gif )
 
 ## Installation
 
