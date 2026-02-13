@@ -3,13 +3,14 @@ package conf
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+
+	"github.com/niedch/mux-session/internal/logger"
 )
 
 func (c *Config) PrettyPrint() {
 	jsonBytes, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
-		log.Printf("Error marshaling config: %v\n", err)
+		logger.Printf("Error marshaling config: %v\n", err)
 		return
 	}
 
@@ -19,7 +20,7 @@ func (c *Config) PrettyPrint() {
 func (c *ProjectConfig) PrettyPrint() {
 	jsonBytes, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
-		log.Printf("Error marshaling config: %v\n", err)
+		logger.Printf("Error marshaling config: %v\n", err)
 		return
 	}
 
