@@ -1,8 +1,9 @@
 package conf
 
 import (
-	"log"
 	"path/filepath"
+
+	"github.com/niedch/mux-session/internal/logger"
 
 	"github.com/adrg/xdg"
 	"github.com/knadh/koanf/parsers/toml"
@@ -45,12 +46,12 @@ func Load(configFile string) (*Config, error) {
 	var conf Config
 
 	if err := k.UnmarshalWithConf("", &conf, koanf.UnmarshalConf{Tag: "koanf"}); err != nil {
-		log.Fatal("Cannot load Config: ", err)
+		logger.Fatalf("Cannot load Config: %v\n", err)
 		return nil, err
 	}
 
 	if err := validateConfig(&conf); err != nil {
-		log.Fatal("Config validation failed: ", err)
+		logger.Fatalf("Config validation failed: %v\n", err)
 		return nil, err
 	}
 
@@ -68,7 +69,7 @@ func loadProjectConfig(k *koanf.Koanf, configFile string) error {
 	}
 
 	if err := k.Load(file.Provider(configPath), toml.Parser()); err != nil {
-		log.Fatal("Cannot load config from '"+configPath+"'", err)
+		logger.Fatalf("Cannot load config from '%s': %v\n", configPath, err)
 		return err
 	}
 	return nil

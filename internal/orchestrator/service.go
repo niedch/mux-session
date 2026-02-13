@@ -2,9 +2,10 @@ package orchestrator
 
 import (
 	"fmt"
-	"log"
 	"path/filepath"
 	"slices"
+
+	"github.com/niedch/mux-session/internal/logger"
 
 	"github.com/niedch/mux-session/internal/conf"
 	"github.com/niedch/mux-session/internal/dataproviders"
@@ -35,7 +36,7 @@ func (m *OrchestratorService) CreateSession(item *dataproviders.Item, projectCon
 
 	firstWindow := projectConfig.WindowConfig[0]
 
-	log.Printf("Creating Session %s\n", sessionName)
+	logger.Printf("Creating Session %s\n", sessionName)
 	if err := m.tmux.NewSession(sessionName, firstWindow.WindowName, dirPath, projectConfig.Env); err != nil {
 		return fmt.Errorf("Failed to create Session %s", sessionName)
 	}

@@ -1,10 +1,11 @@
 package dataproviders
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/niedch/mux-session/internal/logger"
 )
 
 // DirectoryProvider implements DataProvider for directory browsing
@@ -54,7 +55,7 @@ func (dp *DirectoryProvider) GetItems() ([]Item, error) {
 				if containsWorktrees {
 					subItems := GetSubdirectories(fullPath)
 					if len(subItems) > 0 {
-						log.Printf("Adding SubItems %d to %s", len(subItems), item.Display)
+						logger.Printf("Adding SubItems %d to %s", len(subItems), item.Display)
 						item.SubItems = subItems
 					}
 				}
@@ -66,4 +67,3 @@ func (dp *DirectoryProvider) GetItems() ([]Item, error) {
 
 	return dirs, nil
 }
-
