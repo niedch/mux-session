@@ -112,7 +112,7 @@ func executeMuxSessionWithConfig(cmd string, args ...string) func(ctx context.Co
 		}
 		tempConfigFile.Close()
 
-		args = append(args, "-f", testCtx.tempConfigFile)
+		args = append(args, "-f", testCtx.tempConfigFile, "--verbose")
 		if cmd != "config-validate" {
 			args = append(args, "-L", testCtx.tmuxSessionName)
 		}
