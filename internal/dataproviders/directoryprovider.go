@@ -26,6 +26,7 @@ func (dp *DirectoryProvider) GetItems() ([]Item, error) {
 	for _, searchPath := range dp.searchPaths {
 		entries, err := os.ReadDir(searchPath)
 		if err != nil {
+			logger.Printf("Error when searching Paths: %e", err)
 			continue
 		}
 
@@ -37,11 +38,11 @@ func (dp *DirectoryProvider) GetItems() ([]Item, error) {
 			if !strings.HasPrefix(entry.Name(), ".") {
 				fullPath := filepath.Join(searchPath, entry.Name())
 
-				display := "[ ] " + fullPath
-
+				display := "󰄱 " + fullPath
+ 
 				containsWorktrees, _ := HasWorktrees(fullPath)
 				if containsWorktrees {
-					display = "[w] " + fullPath
+					display = "󰰱 " + fullPath
 				}
 
 				item := Item{
