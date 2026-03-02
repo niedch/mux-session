@@ -16,7 +16,7 @@ Feature: Mux Session mark git worktrees
       """
     Then I should see the following items in output:
       | item                              |
-      | \[ \] .*/regular-project          |
-      | \[w\] .*/main-repo                |
+      | 󰄱 .*/regular-project          |
+      | 󰰱 .*/main-repo                |
       |  └── \[ \] my-worktree            |
       | \[TMUX\] test-session             |

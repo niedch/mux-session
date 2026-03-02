@@ -16,9 +16,9 @@ Feature: Mux Session mark existing Sessions
       """
     Then I should see the following items in output:
       | item                     |
-      | \[ \] .*/project-one     |
-      | \[ \] .*/project-two     |
-      | \[ \] .*/project-three   |
+      | 󰄱 .*/project-one     |
+      | 󰄱 .*/project-two     |
+      | 󰄱 .*/project-three   |
       | \[TMUX\] test-session    |
     When I run mux-session switch "project-one" with config:
       """
@@ -34,9 +34,9 @@ Feature: Mux Session mark existing Sessions
       """
     Then I should see the following items in output:
       | item                     |
-      | \[x\] .*/project-one     |
-      | \[ \] .*/project-two     |
-      | \[ \] .*/project-three   |
+      |  .*/project-one     |
+      | 󰄱 .*/project-two     |
+      | 󰄱 .*/project-three   |
       | \[TMUX\] test-session    |
 
   Scenario: Tmux internal Sessions should not be marked with "[ ]"
