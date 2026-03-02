@@ -1,6 +1,8 @@
 package tree
 
 import (
+	"strings"
+
 	"github.com/niedch/mux-session/internal/dataproviders"
 )
 
@@ -16,18 +18,18 @@ func GeneratePrefix(level int, isLast bool) string {
 		return ""
 	}
 
-	var prefix string
+	var prefix strings.Builder
 	for i := 0; i < level-1; i++ {
-		prefix += TreeVertical
+		prefix .WriteString(TreeVertical)
 	}
 
 	if isLast {
-		prefix += TreeLast
+		prefix .WriteString(TreeLast)
 	} else {
-		prefix += TreeBranch
+		prefix .WriteString(TreeBranch)
 	}
 
-	return prefix
+	return prefix.String()
 }
 
 func FlattenItems(items []dataproviders.Item) []dataproviders.Item {
