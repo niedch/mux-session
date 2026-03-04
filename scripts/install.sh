@@ -4,7 +4,7 @@ set -e
 # Repository and binary details
 REPO="niedch/mux-session"
 BINARY_NAME="mux-session"
-INSTALL_DIR="/usr/local/bin"
+INSTALL_DIR="/home/nic/.local/bin"
 
 # Determine OS and architecture
 OS="$(uname -s)"
@@ -27,7 +27,7 @@ curl -sL "${DOWNLOAD_URL}" | tar xz
 
 # Install the binary
 echo "Installing ${BINARY_NAME} to ${INSTALL_DIR}..."
-chmod +x "${BINARY_NAME}"
-sudo mv "${BINARY_NAME}" "${INSTALL_DIR}/${BINARY_NAME}"
+mkdir -p "${INSTALL_DIR}"
+mv "${BINARY_NAME}" "${INSTALL_DIR}/${BINARY_NAME}"
 
 echo "${BINARY_NAME} installed successfully!"
