@@ -23,11 +23,14 @@ DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${LATEST_TAG}/${BINAR
 
 # Download and extract the binary
 echo "Downloading ${BINARY_NAME} from ${DOWNLOAD_URL}..."
-curl -sL "${DOWNLOAD_URL}" | tar xz
+TMPDIR=$(mktemp -d)
+curl -sL "${DOWNLOAD_URL}" -o "${TMPDIR}/${BINARY_NAME}.tar.gz"
+tar xzf "${TMPDIR}/${BINARY_NAME}.tar.gz" -C "${TMPDIR}"
 
 # Install the binary
 echo "Installing ${BINARY_NAME} to ${INSTALL_DIR}..."
 mkdir -p "${INSTALL_DIR}"
-mv "${BINARY_NAME}" "${INSTALL_DIR}/${BINARY_NAME}"
+mv "${TMPDIR}/${BINARY_NAME}" "${INSTALL_DIR}/${BINARY_NAME}"
+rm -rf "${TMPDIR}"
 
 echo "${BINARY_NAME} installed successfully!"
