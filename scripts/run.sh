@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-MUX_INSTALL_DIR=/home/nic/.local/bin
+MUX_INSTALL_DIR=${HOME}/.local/bin
 
 if command -v "$MUX_INSTALL_DIR/mux-session" >/dev/null 2>&1; then
     $MUX_INSTALL_DIR/mux-session

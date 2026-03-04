@@ -4,7 +4,7 @@ set -e
 # Repository and binary details
 REPO="niedch/mux-session"
 BINARY_NAME="mux-session"
-INSTALL_DIR="/home/nic/.local/bin"
+INSTALL_DIR="${HOME}/.local/bin"
 
 # Determine OS and architecture
 OS="$(uname -s)"
