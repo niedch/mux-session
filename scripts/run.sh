@@ -1,11 +1,15 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -e
 
-if command -v mux-session >/dev/null 2>&1; then
-    mux-session "$@"
+$MUX_INSTALL_DIR="/home/nic/go/bin"
+
+if command -v $MUX_INSTALL_DIR/mux-session >/dev/null 2>&1; then
+    $MUX_INSTALL_DIR/mux-session -v
 else
     echo "mux-session not found, installing..."
     SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
     "$SCRIPT_DIR/../install.sh"
-    mux-session "$@"
+    $MUX_INSTALL_DIR/mux-session
 fi
+set +e
+

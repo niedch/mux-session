@@ -3,6 +3,7 @@
 CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 run_plugin() {
+  echo "Running plugin"
   if [[ -n "$TMUX_VERSION" ]]; then
     major="$(echo "$TMUX_VERSION" | cut -d. -f1)"
     minor="$(echo "$TMUX_VERSION" | cut -d. -f2)"
@@ -16,4 +17,5 @@ run_plugin() {
   fi
 }
 
-tmux bind-key f run-shell -b "#{plug_current_dir}/scripts/run.sh"
+tmux bind-key M run-shell "tmux neww $CURRENT_DIR/scripts/run.sh"
+
