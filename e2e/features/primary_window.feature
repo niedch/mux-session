@@ -17,7 +17,7 @@ Feature: Primary Window Selection
       
       [[project.window]]
       window_name = "First"
-
+      
       [[project.window]]
       window_name = "Second"
       """
@@ -42,7 +42,7 @@ Feature: Primary Window Selection
       [[project.window]]
       window_name = "First"
       primary = true
-
+      
       [[project.window]]
       window_name = "Second"
       """

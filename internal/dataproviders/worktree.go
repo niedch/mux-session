@@ -42,8 +42,7 @@ func GetSubdirectories(parentPath string) []Item {
 		filePointer := string(dirPointerBytes)
 		itemDir := filepath.Dir(filePointer)
 		
-
-		display := "[ ] " + entry.Name()
+		display := UNSELECTED_ICON + " " + entry.Name()
 
 		subItems = append(subItems, Item{
 			Id:         entry.Name(),

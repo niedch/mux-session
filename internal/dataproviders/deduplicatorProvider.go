@@ -87,7 +87,7 @@ func filterItems(items []Item, ids map[string]bool) []Item {
 func markDuplicatesInItems(items *[]Item, ids map[string]bool) {
 	for i := range *items {
 		if _, found := ids[(*items)[i].Id]; found {
-			(*items)[i].Display = strings.Replace((*items)[i].Display, "󰄱", "", 1)
+			(*items)[i].Display = strings.Replace((*items)[i].Display, UNSELECTED_ICON, SELECTED_ICON, 1)
 		}
 		if len((*items)[i].SubItems) > 0 {
 			markDuplicatesInItems(&(*items)[i].SubItems, ids)

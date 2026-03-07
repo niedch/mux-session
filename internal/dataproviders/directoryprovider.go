@@ -38,11 +38,11 @@ func (dp *DirectoryProvider) GetItems() ([]Item, error) {
 			if !strings.HasPrefix(entry.Name(), ".") {
 				fullPath := filepath.Join(searchPath, entry.Name())
 
-				display := "󰄱 " + fullPath
+				display := UNSELECTED_ICON + " " + fullPath
  
 				containsWorktrees, _ := HasWorktrees(fullPath)
 				if containsWorktrees {
-					display = "󰰱 " + fullPath
+					display = WORKTREE_ICON + " " + fullPath
 				}
 
 				item := Item{

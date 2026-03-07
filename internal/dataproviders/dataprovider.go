@@ -1,5 +1,12 @@
 package dataproviders
 
+const (
+	SELECTED_ICON = ""
+	UNSELECTED_ICON = "󰄱"
+	WORKTREE_ICON = "󰙅"
+	TMUX_ICON = ""
+)
+
 type Item struct {
 	Display    string
 	Id         string

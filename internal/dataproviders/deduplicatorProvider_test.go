@@ -18,9 +18,9 @@ func (m *mockDataProvider) GetItems() ([]Item, error) {
 func TestDeduplicatorProvider_GetItems_NoDuplicates(t *testing.T) {
 	dirProvider := &mockDataProvider{
 		items: []Item{
-			{Id: "dir1", Display: "󰄱 dir1"},
-			{Id: "dir2", Display: "󰄱 dir2", SubItems: []Item{
-				{Id: "dir3", Display: "󰄱 dir3"},
+			{Id: "dir1", Display: UNSELECTED_ICON + " dir1"},
+			{Id: "dir2", Display: UNSELECTED_ICON + " dir2", SubItems: []Item{
+				{Id: "dir3", Display: UNSELECTED_ICON + " dir3"},
 			}},
 		},
 	}
@@ -38,9 +38,9 @@ func TestDeduplicatorProvider_GetItems_NoDuplicates(t *testing.T) {
 
 	expected := []Item{
 		{Id: "mux1", Display: "mux1"},
-		{Id: "dir1", Display: "󰄱 dir1"},
-		{Id: "dir2", Display: "󰄱 dir2", SubItems: []Item{
-			{Id: "dir3", Display: "󰄱 dir3"},
+		{Id: "dir1", Display: UNSELECTED_ICON + " dir1"},
+		{Id: "dir2", Display: UNSELECTED_ICON + " dir2", SubItems: []Item{
+			{Id: "dir3", Display: UNSELECTED_ICON + " dir3"},
 		}},
 	}
 
@@ -52,9 +52,9 @@ func TestDeduplicatorProvider_GetItems_NoDuplicates(t *testing.T) {
 func TestDeduplicatorProvider_GetItems_WithDuplicates(t *testing.T) {
 	dirProvider := &mockDataProvider{
 		items: []Item{
-			{Id: "dir1", Display: "󰄱 dir1"},
-			{Id: "dir2", Display: "󰄱 dir2", SubItems: []Item{
-				{Id: "dir3", Display: "󰄱 dir3"},
+			{Id: "dir1", Display: UNSELECTED_ICON + " dir1"},
+			{Id: "dir2", Display: UNSELECTED_ICON + " dir2", SubItems: []Item{
+				{Id: "dir3", Display: UNSELECTED_ICON + " dir3"},
 			}},
 		},
 	}
@@ -73,9 +73,9 @@ func TestDeduplicatorProvider_GetItems_WithDuplicates(t *testing.T) {
 
 	expected := []Item{
 		{Id: "mux1", Display: "mux1"},
-		{Id: "dir1", Display: "󰄱 dir1"},
-		{Id: "dir2", Display: "󰄱 dir2", SubItems: []Item{
-			{Id: "dir3", Display: "󰄱 dir3"},
+		{Id: "dir1", Display: UNSELECTED_ICON + " dir1"},
+		{Id: "dir2", Display: UNSELECTED_ICON + " dir2", SubItems: []Item{
+			{Id: "dir3", Display: UNSELECTED_ICON + " dir3"},
 		}},
 	}
 
@@ -87,11 +87,11 @@ func TestDeduplicatorProvider_GetItems_WithDuplicates(t *testing.T) {
 func TestDeduplicatorProvider_GetItems_MarkDuplicates(t *testing.T) {
 	dirProvider := &mockDataProvider{
 		items: []Item{
-			{Id: "dir1", Display: "󰄱 dir1"}, // Should be marked
-			{Id: "dir2", Display: "󰄱 dir2", SubItems: []Item{
-				{Id: "dir3", Display: "󰄱 dir3"}, // Should be marked
+			{Id: "dir1", Display: UNSELECTED_ICON + " dir1"}, // Should be marked
+			{Id: "dir2", Display: UNSELECTED_ICON + " dir2", SubItems: []Item{
+				{Id: "dir3", Display: UNSELECTED_ICON + " dir3"}, // Should be marked
 			}},
-			{Id: "dir4", Display: "󰄱 dir4"}, // Not in mux, should not be marked
+			{Id: "dir4", Display: UNSELECTED_ICON + " dir4"}, // Not in mux, should not be marked
 		},
 	}
 	muxProvider := &mockDataProvider{
@@ -110,11 +110,11 @@ func TestDeduplicatorProvider_GetItems_MarkDuplicates(t *testing.T) {
 
 	expected := []Item{
 		{Id: "mux1", Display: "mux1"},
-		{Id: "dir1", Display: " dir1"},
-		{Id: "dir2", Display: "󰄱 dir2", SubItems: []Item{
-			{Id: "dir3", Display: " dir3"},
+		{Id: "dir1", Display: SELECTED_ICON + " dir1"},
+		{Id: "dir2", Display: UNSELECTED_ICON + " dir2", SubItems: []Item{
+			{Id: "dir3", Display: SELECTED_ICON + " dir3"},
 		}},
-		{Id: "dir4", Display: "󰄱 dir4"},
+		{Id: "dir4", Display: UNSELECTED_ICON + " dir4"},
 	}
 
 	if !reflect.DeepEqual(result, expected) {
@@ -125,7 +125,7 @@ func TestDeduplicatorProvider_GetItems_MarkDuplicates(t *testing.T) {
 func TestDeduplicatorProvider_GetItems_MarkDuplicates_NoDuplicates(t *testing.T) {
 	dirProvider := &mockDataProvider{
 		items: []Item{
-			{Id: "dir1", Display: "󰄱 dir1"},
+			{Id: "dir1", Display: UNSELECTED_ICON + " dir1"},
 		},
 	}
 	muxProvider := &mockDataProvider{
@@ -142,7 +142,7 @@ func TestDeduplicatorProvider_GetItems_MarkDuplicates_NoDuplicates(t *testing.T)
 
 	expected := []Item{
 		{Id: "mux1", Display: "mux1"},
-		{Id: "dir1", Display: "󰄱 dir1"},
+		{Id: "dir1", Display: UNSELECTED_ICON + " dir1"},
 	}
 
 	if !reflect.DeepEqual(result, expected) {
