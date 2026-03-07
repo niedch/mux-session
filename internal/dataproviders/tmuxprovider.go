@@ -28,7 +28,7 @@ func (dp *TmuxProvider) GetItems() ([]Item, error) {
 	for _, session := range sessions {
 		items = append(items, Item{
 			Id:      session,
-			Display: "[TMUX] " + session,
+			Display: TMUX_ICON + " " + session,
 			Path:    session,
 		})
 	}
