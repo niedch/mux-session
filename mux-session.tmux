@@ -17,5 +17,7 @@ run_plugin() {
   fi
 }
 
-tmux bind-key M run-shell "tmux neww $CURRENT_DIR/scripts/run.sh"
+MUX_SESSION_KEY="${MUX_SESSION_KEY:-M}"
+
+tmux bind-key "$MUX_SESSION_KEY" run-shell "tmux neww $CURRENT_DIR/scripts/run.sh"
 
