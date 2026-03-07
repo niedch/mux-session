@@ -15,11 +15,11 @@ Feature: Mux Session mark git worktrees
       search_paths = ["<search_path>"]
       """
     Then I should see the following items in output:
-      | item                    |
-      | 󰄱 .*/regular-project    |
-      | 󰰱 .*/main-repo          |
-      | └── 󰄱 my-worktree       |
-      | \\[TMUX\\] test-session |
+      | item                 |
+      | 󰄱 .*/regular-project |
+      | 󰙅 .*/main-repo       |
+      | └── 󰄱 my-worktree    |
+      |  test-session       |
 
   Scenario: A worktree that has an active session should be marked with both "[w]" and "[x]"
     Given a new tmux server
@@ -41,8 +41,8 @@ Feature: Mux Session mark git worktrees
       search_paths = ["<search_path>"]
       """
     Then I should see the following items in output:
-      | item                    |
-      | 󰄱 .*/regular-project    |
-      | 󰰱 .*/main-repo          |
-      | └──  my-worktree       |
-      | \\[TMUX\\] test-session |
+      | item                 |
+      | 󰄱 .*/regular-project |
+      | 󰙅 .*/main-repo       |
+      | └──  my-worktree    |
+      |  test-session       |
