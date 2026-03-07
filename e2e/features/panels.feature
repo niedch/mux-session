@@ -23,7 +23,7 @@ Feature: Panel Configuration
       
       [[project.window.panel_config]]
       panel_direction = "h"
-
+      
       [[project.window]]
       window_name = "VerticalSplit"
       
