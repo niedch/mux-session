@@ -24,6 +24,27 @@ sudo curl -sL https://raw.githubusercontent.com/niedch/mux-session/master/instal
 mux-session init
 ```
 
+### TPM (Tmux Plugin Manager)
+
+If you use TPM, add this to your `.tmux.conf`:
+
+```bash
+set -g @plugin 'niedch/mux-session'
+```
+
+Then press `prefix + I` to install the plugin.
+
+#### Configuration
+
+```bash
+# Set the key binding (default: M)
+set -g @mux_session_key "f"
+```
+
+#### Usage
+
+Press `prefix + f` (or your custom key) to launch mux-session.
+
 
 ### Prerequisites
 
