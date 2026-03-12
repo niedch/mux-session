@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/charmbracelet/glamour"
 	"github.com/niedch/mux-session/internal/dataproviders"
@@ -36,10 +37,20 @@ func (r *ReadmePreviewProvider) Render(item interface{}) (string, error) {
 		return "", fmt.Errorf("expected *dataproviders.Item, got %T", item)
 	}
 
-	readmePath := filepath.Join(dpItem.Path, "README.md")
+	files, err := os.ReadDir(dpItem.Path)
+	if err != nil {
+		return "", fmt.Errorf("error reading directory: %w", err)
+	}
 
-	_, err := os.Stat(readmePath)
-	if os.IsNotExist(err) {
+	var readmePath string
+	for _, file := range files {
+		if strings.EqualFold(file.Name(), "README.md") {
+			readmePath = filepath.Join(dpItem.Path, file.Name())
+			break
+		}
+	}
+
+	if readmePath == "" {
 		return fmt.Sprintf("No README.md found in %s", dpItem.Path), nil
 	}
 
@@ -72,4 +83,9 @@ func (r *ReadmePreviewProvider) SetWidth(width int) error {
 	}
 	r.renderer = renderer
 	return nil
+}
+
+// SetUpdateChan sets the channel to notify the UI of updates
+func (r *ReadmePreviewProvider) SetUpdateChan(ch chan<- struct{}) {
+	// not needed for this provider
 }

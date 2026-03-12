@@ -33,6 +33,14 @@ func (p *previewPort) LoadItem(item interface{}) error {
 	}
 	p.lastItem = item
 
+	return p.renderItem(item)
+}
+
+func (p *previewPort) ReloadItem() error {
+	return p.renderItem(p.lastItem)
+}
+
+func (p *previewPort) renderItem(item interface{}) error {
 	if item == nil {
 		p.content = ""
 		p.viewport.SetContent(p.content)

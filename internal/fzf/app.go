@@ -21,6 +21,15 @@ var (
 		Border(lipgloss.NormalBorder(), false, true, false, false)
 )
 
+type previewUpdateMsg struct{}
+
+func waitForPreviewUpdate(ch <-chan struct{}) tea.Cmd {
+	return func() tea.Msg {
+		<-ch
+		return previewUpdateMsg{}
+	}
+}
+
 func Run(dataProvider dataproviders.DataProvider, config *conf.Config) (*dataproviders.Item, error) {
 	items, err := dataProvider.GetItems()
 	if err != nil {
@@ -39,7 +48,10 @@ func Run(dataProvider dataproviders.DataProvider, config *conf.Config) (*datapro
 		return nil, err
 	}
 
-	p := tea.NewProgram(initialModel(items, previewProvider, leftVpWidth, rightVpWidth, h), tea.WithAltScreen())
+	updateChan := make(chan struct{})
+	previewProvider.SetUpdateChan(updateChan)
+
+	p := tea.NewProgram(initialModel(items, previewProvider, updateChan, leftVpWidth, rightVpWidth, h), tea.WithAltScreen())
 	m, err := p.Run()
 	if err != nil {
 		return nil, err
@@ -59,22 +71,30 @@ type model struct {
 	lastSelection *dataproviders.Item
 	width         int
 	height        int
+	updateChan    <-chan struct{}
 }
 
-func initialModel(items []dataproviders.Item, provider previewproviders.PreviewProvider, leftVpWidth, rightVpWidth, h int) model {
+func initialModel(items []dataproviders.Item, provider previewproviders.PreviewProvider, updateChan <-chan struct{}, leftVpWidth, rightVpWidth, h int) model {
 	return model{
 		searchPort:  newSearchPort(items, leftVpWidth, h),
 		previewPort: newPreviewPort(provider, rightVpWidth, h),
+		updateChan:  updateChan,
 	}
 }
 
 func (m model) Init() tea.Cmd {
+	var cmds []tea.Cmd
+
 	// Load initial README if items exist
 	if item := m.searchPort.GetSelected(); item != nil {
 		m.lastSelection = item
 		m.previewPort.LoadItem(item)
 	}
-	return m.searchPort.textInput.Focus()
+
+	cmds = append(cmds, m.searchPort.textInput.Focus())
+	cmds = append(cmds, waitForPreviewUpdate(m.updateChan))
+
+	return tea.Batch(cmds...)
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -96,6 +116,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.searchPort.SetSize(leftVpWidth, msg.Height)
 		m.previewPort.SetSize(rightVpWidth, msg.Height)
+	case previewUpdateMsg:
+		// When an update is received, reload the currently selected item
+		// and listen for the next update
+		if m.lastSelection != nil {
+			m.previewPort.ReloadItem()
+		}
+		return m, waitForPreviewUpdate(m.updateChan)
 	}
 
 	// Update searchPort first (this moves the cursor)

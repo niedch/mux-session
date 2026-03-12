@@ -14,9 +14,17 @@ func CreatePreviewProvider(config *conf.Config, width int) (PreviewProvider, err
 	switch providerName {
 	case "readme":
 		provider, err = NewReadmePreviewProvider(width)
+	case "github":
+		provider, err = NewGithubPreviewProvider(width)
+	case "tree":
+		provider, err = NewTreePreviewProvider(width)
 	default:
 		provider, err = NewReadmePreviewProvider(width)
 	}
 
-	return provider, err
+	if err != nil {
+		return nil, err
+	}
+
+	return NewAsyncProviderWrapper(provider), nil
 }

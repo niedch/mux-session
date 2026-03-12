@@ -8,4 +8,10 @@ type PreviewProvider interface {
 
 	// Name returns the identifier name of this provider
 	Name() string
+
+	// SetWidth updates the width for word wrapping
+	SetWidth(width int) error
+
+	// SetUpdateChan sets the channel to notify the UI of updates
+	SetUpdateChan(ch chan<- struct{})
 }
