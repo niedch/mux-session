@@ -8,7 +8,7 @@ GOMOD=$(GOCMD) mod
 BINARY_NAME=mux-session
 BINARY_UNIX=$(BINARY_NAME)_unix
 
-.PHONY: all build clean test run deps help install e2e
+.PHONY: all build clean test run deps help install e2e fmt
 
 all: test build
 
@@ -45,6 +45,10 @@ dev:
 install:
 	$(GOCMD) install .
 
+fmt:
+	$(GOCMD) fmt ./...
+
+
 help:
 	@echo "Available commands:"
 	@echo "  make build    - Build the binary"
@@ -55,4 +59,5 @@ help:
 	@echo "  make deps     - Download and tidy dependencies"
 	@echo "  make dev      - Run directly without building binary"
 	@echo "  make install  - Install binary globally with go install"
+	@echo "  make fmt      - Format the codebase using go fmt"
 	@echo "  make all      - Run tests then build"

@@ -32,7 +32,7 @@ func GetSubdirectories(parentPath string) []Item {
 		if !entry.IsDir() {
 			continue
 		}
-		
+
 		definitionFile := filepath.Join(worktreeDefinitions, entry.Name(), "gitdir")
 		dirPointerBytes, err := os.ReadFile(definitionFile)
 		if err != nil {
@@ -41,7 +41,7 @@ func GetSubdirectories(parentPath string) []Item {
 
 		filePointer := string(dirPointerBytes)
 		itemDir := filepath.Dir(filePointer)
-		
+
 		display := UNSELECTED_ICON + " " + entry.Name()
 
 		subItems = append(subItems, Item{

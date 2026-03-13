@@ -11,5 +11,4 @@ type PreviewProvider interface {
 
 	// SetWidth updates the width for word wrapping
 	SetWidth(width int) error
-
 }

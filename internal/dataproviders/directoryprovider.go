@@ -39,7 +39,7 @@ func (dp *DirectoryProvider) GetItems() ([]Item, error) {
 				fullPath := filepath.Join(searchPath, entry.Name())
 
 				display := UNSELECTED_ICON + " " + fullPath
- 
+
 				containsWorktrees, _ := HasWorktrees(fullPath)
 				if containsWorktrees {
 					display = WORKTREE_ICON + " " + fullPath
