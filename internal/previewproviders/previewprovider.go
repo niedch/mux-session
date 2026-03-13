@@ -4,7 +4,7 @@ package previewproviders
 type PreviewProvider interface {
 	// Render generates the content to display in the preview panel
 	// Returns the rendered string and any error that occurred
-	Render(item interface{}) (string, error)
+	Render(item any) (string, error)
 
 	// Name returns the identifier name of this provider
 	Name() string
@@ -12,6 +12,4 @@ type PreviewProvider interface {
 	// SetWidth updates the width for word wrapping
 	SetWidth(width int) error
 
-	// SetUpdateChan sets the channel to notify the UI of updates
-	SetUpdateChan(ch chan<- struct{})
 }

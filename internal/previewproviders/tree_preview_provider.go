@@ -91,8 +91,3 @@ func (r *TreePreviewProvider) SetWidth(width int) error {
 	r.width = width
 	return nil
 }
-
-// SetUpdateChan sets the channel to notify the UI of updates
-func (r *TreePreviewProvider) SetUpdateChan(ch chan<- struct{}) {
-	// not needed for this provider
-}

@@ -19,7 +19,7 @@ func NewAsyncProviderWrapper(inner PreviewProvider) *AsyncProviderWrapper {
 }
 
 // Render returns cached content if available, or spawns a goroutine to fetch it via the inner provider.
-func (w *AsyncProviderWrapper) Render(item interface{}) (string, error) {
+func (w *AsyncProviderWrapper) Render(item any) (string, error) {
 	dpItem, ok := item.(*dataproviders.Item)
 	if !ok {
 		// Fallback for non-dataproviders.Item
@@ -53,8 +53,7 @@ func (w *AsyncProviderWrapper) SetWidth(width int) error {
 	return w.inner.SetWidth(width)
 }
 
-// SetUpdateChan sets the channel on the wrapper's cache and delegates to the inner provider.
+// SetUpdateChan sets the channel on the wrapper's cache.
 func (w *AsyncProviderWrapper) SetUpdateChan(ch chan<- struct{}) {
 	w.cache.SetUpdateChan(ch)
-	w.inner.SetUpdateChan(ch)
 }

@@ -48,7 +48,7 @@ func Run(dataProvider dataproviders.DataProvider, config *conf.Config) (*datapro
 		return nil, err
 	}
 
-	updateChan := make(chan struct{})
+	updateChan := make(chan struct{}, 1)
 	previewProvider.SetUpdateChan(updateChan)
 
 	p := tea.NewProgram(initialModel(items, previewProvider, updateChan, leftVpWidth, rightVpWidth, h), tea.WithAltScreen())
@@ -75,10 +75,12 @@ type model struct {
 }
 
 func initialModel(items []dataproviders.Item, provider previewproviders.PreviewProvider, updateChan <-chan struct{}, leftVpWidth, rightVpWidth, h int) model {
+	sp := newSearchPort(items, leftVpWidth, h)
 	return model{
-		searchPort:  newSearchPort(items, leftVpWidth, h),
-		previewPort: newPreviewPort(provider, rightVpWidth, h),
-		updateChan:  updateChan,
+		searchPort:    sp,
+		previewPort:   newPreviewPort(provider, rightVpWidth, h),
+		updateChan:    updateChan,
+		lastSelection: sp.GetSelected(),
 	}
 }
 
@@ -86,9 +88,8 @@ func (m model) Init() tea.Cmd {
 	var cmds []tea.Cmd
 
 	// Load initial README if items exist
-	if item := m.searchPort.GetSelected(); item != nil {
-		m.lastSelection = item
-		m.previewPort.LoadItem(item)
+	if m.lastSelection != nil {
+		m.previewPort.LoadItem(m.lastSelection)
 	}
 
 	cmds = append(cmds, m.searchPort.textInput.Focus())

@@ -2,7 +2,7 @@ package previewproviders
 
 import "github.com/niedch/mux-session/internal/conf"
 
-func CreatePreviewProvider(config *conf.Config, width int) (PreviewProvider, error) {
+func CreatePreviewProvider(config *conf.Config, width int) (*AsyncProviderWrapper, error) {
 	providerName := "readme"
 	if config.PreviewProvider != nil {
 		providerName = *config.PreviewProvider

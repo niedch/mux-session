@@ -23,7 +23,7 @@ func NewGithubPreviewProvider(width int) (*GithubPreviewProvider, error) {
 }
 
 // Render synchronously fetches the GitHub repository preview for the given item
-func (r *GithubPreviewProvider) Render(item interface{}) (string, error) {
+func (r *GithubPreviewProvider) Render(item any) (string, error) {
 	dpItem, ok := item.(*dataproviders.Item)
 	if !ok {
 		return "", fmt.Errorf("expected *dataproviders.Item, got %T", item)
@@ -92,8 +92,8 @@ func (r *GithubPreviewProvider) fetch(dpItem *dataproviders.Item) (string, error
 func parseGitURL(url string) (hostname string, nwo string, err error) {
 	url = strings.TrimSuffix(url, ".git")
 
-	if strings.HasPrefix(url, "https://") {
-		url = strings.TrimPrefix(url, "https://")
+	if after, ok := strings.CutPrefix(url, "https://"); ok {
+		url = after
 		parts := strings.SplitN(url, "/", 2)
 		if len(parts) != 2 {
 			return "", "", fmt.Errorf("invalid https git url: %s", url)
@@ -103,8 +103,8 @@ func parseGitURL(url string) (hostname string, nwo string, err error) {
 		return hostname, nwo, nil
 	}
 
-	if strings.HasPrefix(url, "git@") {
-		url = strings.TrimPrefix(url, "git@")
+	if after, ok := strings.CutPrefix(url, "git@"); ok {
+		url = after
 		parts := strings.SplitN(url, ":", 2)
 		if len(parts) != 2 {
 			return "", "", fmt.Errorf("invalid ssh git url: %s", url)
@@ -126,9 +126,4 @@ func (r *GithubPreviewProvider) Name() string {
 func (r *GithubPreviewProvider) SetWidth(width int) error {
 	r.width = width
 	return nil
-}
-
-// SetUpdateChan sets the channel to notify the UI of updates
-func (r *GithubPreviewProvider) SetUpdateChan(ch chan<- struct{}) {
-	// not needed for this synchronous provider directly
 }

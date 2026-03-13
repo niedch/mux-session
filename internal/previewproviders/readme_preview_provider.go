@@ -31,7 +31,7 @@ func NewReadmePreviewProvider(width int) (*ReadmePreviewProvider, error) {
 }
 
 // Render generates the README preview for the given item
-func (r *ReadmePreviewProvider) Render(item interface{}) (string, error) {
+func (r *ReadmePreviewProvider) Render(item any) (string, error) {
 	dpItem, ok := item.(*dataproviders.Item)
 	if !ok {
 		return "", fmt.Errorf("expected *dataproviders.Item, got %T", item)
@@ -83,9 +83,4 @@ func (r *ReadmePreviewProvider) SetWidth(width int) error {
 	}
 	r.renderer = renderer
 	return nil
-}
-
-// SetUpdateChan sets the channel to notify the UI of updates
-func (r *ReadmePreviewProvider) SetUpdateChan(ch chan<- struct{}) {
-	// not needed for this provider
 }
