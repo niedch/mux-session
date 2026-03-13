@@ -7,19 +7,16 @@ import (
 	"github.com/niedch/mux-session/internal/previewproviders/github"
 )
 
-// GithubPreviewProvider renders GitHub repository information synchronously
 type GithubPreviewProvider struct {
 	width int
 }
 
-// NewGithubPreviewProvider creates a new GitHub preview provider
 func NewGithubPreviewProvider(width int) (*GithubPreviewProvider, error) {
 	return &GithubPreviewProvider{
 		width: width,
 	}, nil
 }
 
-// Render synchronously fetches the GitHub repository preview for the given item
 func (r *GithubPreviewProvider) Render(item any) (string, error) {
 	dpItem, ok := item.(*dataproviders.Item)
 	if !ok {
@@ -40,12 +37,10 @@ func (r *GithubPreviewProvider) fetch(dpItem *dataproviders.Item) (string, error
 	return github.RenderUI(info, r.width), nil
 }
 
-// Name returns the identifier name of this provider
 func (r *GithubPreviewProvider) Name() string {
 	return "github"
 }
 
-// SetWidth updates the renderer with a new width for word wrapping
 func (r *GithubPreviewProvider) SetWidth(width int) error {
 	r.width = width
 	return nil

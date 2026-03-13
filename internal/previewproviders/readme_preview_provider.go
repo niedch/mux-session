@@ -10,12 +10,10 @@ import (
 	"github.com/niedch/mux-session/internal/dataproviders"
 )
 
-// ReadmePreviewProvider renders README.md files from project directories
 type ReadmePreviewProvider struct {
 	renderer *glamour.TermRenderer
 }
 
-// NewReadmePreviewProvider creates a new README preview provider
 func NewReadmePreviewProvider(width int) (*ReadmePreviewProvider, error) {
 	renderer, err := glamour.NewTermRenderer(
 		glamour.WithAutoStyle(),
@@ -30,7 +28,6 @@ func NewReadmePreviewProvider(width int) (*ReadmePreviewProvider, error) {
 	}, nil
 }
 
-// Render generates the README preview for the given item
 func (r *ReadmePreviewProvider) Render(item any) (string, error) {
 	dpItem, ok := item.(*dataproviders.Item)
 	if !ok {
@@ -67,12 +64,10 @@ func (r *ReadmePreviewProvider) Render(item any) (string, error) {
 	return rendered, nil
 }
 
-// Name returns the identifier name of this provider
 func (r *ReadmePreviewProvider) Name() string {
 	return "readme"
 }
 
-// SetWidth updates the renderer with a new width for word wrapping
 func (r *ReadmePreviewProvider) SetWidth(width int) error {
 	renderer, err := glamour.NewTermRenderer(
 		glamour.WithAutoStyle(),

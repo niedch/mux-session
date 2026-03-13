@@ -10,20 +10,17 @@ import (
 	"github.com/niedch/mux-session/internal/tree"
 )
 
-// TreePreviewProvider renders a directory tree
 type TreePreviewProvider struct {
 	width int
 }
 
-// NewTreePreviewProvider creates a new tree preview provider
 func NewTreePreviewProvider(width int) (*TreePreviewProvider, error) {
 	return &TreePreviewProvider{
 		width: width,
 	}, nil
 }
 
-// Render generates the directory tree preview for the given item
-func (r *TreePreviewProvider) Render(item interface{}) (string, error) {
+func (r *TreePreviewProvider) Render(item any) (string, error) {
 	dpItem, ok := item.(*dataproviders.Item)
 	if !ok {
 		return "", fmt.Errorf("expected *dataproviders.Item, got %T", item)
@@ -51,7 +48,7 @@ func buildTree(dir string, prefix string, currentDepth int, maxDepth int, builde
 
 	var filtered []os.DirEntry
 	for _, e := range entries {
-		// Ignore hidden files and specific directories
+
 		if e.Name() == ".git" {
 			continue
 		}
@@ -81,12 +78,10 @@ func buildTree(dir string, prefix string, currentDepth int, maxDepth int, builde
 	return nil
 }
 
-// Name returns the identifier name of this provider
 func (r *TreePreviewProvider) Name() string {
 	return "tree"
 }
 
-// SetWidth updates the renderer with a new width for word wrapping
 func (r *TreePreviewProvider) SetWidth(width int) error {
 	r.width = width
 	return nil
