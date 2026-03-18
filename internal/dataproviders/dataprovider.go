@@ -1,10 +1,10 @@
 package dataproviders
 
 const (
-	SELECTED_ICON = ""
+	SELECTED_ICON   = ""
 	UNSELECTED_ICON = "󰄱"
-	WORKTREE_ICON = "󰙅"
-	TMUX_ICON = ""
+	WORKTREE_ICON   = "󰙅"
+	TMUX_ICON       = ""
 )
 
 type Item struct {

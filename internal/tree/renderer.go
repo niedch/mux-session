@@ -20,13 +20,13 @@ func GeneratePrefix(level int, isLast bool) string {
 
 	var prefix strings.Builder
 	for i := 0; i < level-1; i++ {
-		prefix .WriteString(TreeVertical)
+		prefix.WriteString(TreeVertical)
 	}
 
 	if isLast {
-		prefix .WriteString(TreeLast)
+		prefix.WriteString(TreeLast)
 	} else {
-		prefix .WriteString(TreeBranch)
+		prefix.WriteString(TreeBranch)
 	}
 
 	return prefix.String()

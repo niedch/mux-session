@@ -4,17 +4,16 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/charmbracelet/glamour"
 	"github.com/niedch/mux-session/internal/dataproviders"
 )
 
-// ReadmePreviewProvider renders README.md files from project directories
 type ReadmePreviewProvider struct {
 	renderer *glamour.TermRenderer
 }
 
-// NewReadmePreviewProvider creates a new README preview provider
 func NewReadmePreviewProvider(width int) (*ReadmePreviewProvider, error) {
 	renderer, err := glamour.NewTermRenderer(
 		glamour.WithAutoStyle(),
@@ -29,17 +28,26 @@ func NewReadmePreviewProvider(width int) (*ReadmePreviewProvider, error) {
 	}, nil
 }
 
-// Render generates the README preview for the given item
-func (r *ReadmePreviewProvider) Render(item interface{}) (string, error) {
+func (r *ReadmePreviewProvider) Render(item any) (string, error) {
 	dpItem, ok := item.(*dataproviders.Item)
 	if !ok {
 		return "", fmt.Errorf("expected *dataproviders.Item, got %T", item)
 	}
 
-	readmePath := filepath.Join(dpItem.Path, "README.md")
+	files, err := os.ReadDir(dpItem.Path)
+	if err != nil {
+		return "", fmt.Errorf("error reading directory: %w", err)
+	}
 
-	_, err := os.Stat(readmePath)
-	if os.IsNotExist(err) {
+	var readmePath string
+	for _, file := range files {
+		if strings.EqualFold(file.Name(), "README.md") {
+			readmePath = filepath.Join(dpItem.Path, file.Name())
+			break
+		}
+	}
+
+	if readmePath == "" {
 		return fmt.Sprintf("No README.md found in %s", dpItem.Path), nil
 	}
 
@@ -56,12 +64,10 @@ func (r *ReadmePreviewProvider) Render(item interface{}) (string, error) {
 	return rendered, nil
 }
 
-// Name returns the identifier name of this provider
 func (r *ReadmePreviewProvider) Name() string {
 	return "readme"
 }
 
-// SetWidth updates the renderer with a new width for word wrapping
 func (r *ReadmePreviewProvider) SetWidth(width int) error {
 	renderer, err := glamour.NewTermRenderer(
 		glamour.WithAutoStyle(),
