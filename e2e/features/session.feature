@@ -15,11 +15,11 @@ Feature: Mux Session functionality
       search_paths = ["<search_path>"]
       """
     Then I should see the following items in output:
-      | item           |
-      | project-one    |
-      | project-two    |
-      | project-three  |
-      |  test-session |
+      | item          |
+      | test-session  |
+      | project-one   |
+      | project-three |
+      | project-two   |
 
   Scenario: Switch command creates new session from directory
     Given a new tmux server

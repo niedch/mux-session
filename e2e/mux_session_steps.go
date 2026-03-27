@@ -77,6 +77,9 @@ func RegisterMuxSessionSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(`^I should see the following (lines?|items?) in output:$`, func(ctx context.Context, _ string, table *godog.Table) error {
 		testCtx := ctx.Value("testCtx").(*testContext)
 
+		outputLines := strings.Split(testCtx.lastOutput, "\n")
+		lineIndex := -1
+
 		for _, row := range table.Rows[1:] {
 			pattern := row.Cells[0].Value
 			re, err := regexp.Compile(pattern)
@@ -84,9 +87,32 @@ func RegisterMuxSessionSteps(ctx *godog.ScenarioContext) {
 				return fmt.Errorf("invalid regex pattern '%s': %w", pattern, err)
 			}
 
-			assert.True(godog.T(ctx), re.MatchString(testCtx.lastOutput), "Expected output '%s' to match regex: '%s'", testCtx.lastOutput, pattern)
+			found := false
+			for i := lineIndex + 1; i < len(outputLines); i++ {
+				line := strings.TrimSpace(outputLines[i])
+				if line == "" || strings.HasPrefix(line, "Loading configuration") || strings.HasPrefix(line, "Configuration") || strings.HasPrefix(line, "Initializing") || strings.HasPrefix(line, "Getting items") || strings.HasPrefix(line, "Found") || strings.HasPrefix(line, "Displaying") || strings.HasPrefix(line, "Adding SubItems") {
+					continue
+				}
+				if re.MatchString(line) {
+					found = true
+					lineIndex = i
+					break
+				}
+			}
+
+			assert.True(godog.T(ctx), found, "Expected output to contain line matching regex: '%s'", pattern)
 		}
 
+		return nil
+	})
+
+	ctx.Step(`^I search for "([^"]*)"$`, func(ctx context.Context, searchQuery string) error {
+		return executeMuxSessionWithConfig("list-sessions", "-s", searchQuery)(ctx, &godog.DocString{Content: "search_paths = [\"<search_path>\"]"})
+	})
+
+	ctx.Step(`^I should not see "([^"]*)" in output$`, func(ctx context.Context, text string) error {
+		testCtx := ctx.Value("testCtx").(*testContext)
+		assert.False(godog.T(ctx), strings.Contains(testCtx.lastOutput, text), "Expected output '%s' to NOT contain: '%s'", testCtx.lastOutput, text)
 		return nil
 	})
 }
