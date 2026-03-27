@@ -5,11 +5,14 @@ import (
 
 	"github.com/niedch/mux-session/internal/conf"
 	"github.com/niedch/mux-session/internal/dataproviders"
+	"github.com/niedch/mux-session/internal/fzf"
 	"github.com/niedch/mux-session/internal/logger"
 	"github.com/niedch/mux-session/internal/tmux"
 	"github.com/niedch/mux-session/internal/tree"
 	"github.com/spf13/cobra"
 )
+
+var search string
 
 var listSessionsCmd = &cobra.Command{
 	Use:   "list-sessions",
@@ -48,6 +51,11 @@ var listSessionsCmd = &cobra.Command{
 			return
 		}
 
+		if search != "" {
+			items = fzf.FilterTree(items, search)
+			logger.Printf("Filtered to %d items\n", len(items))
+		}
+
 		flattenedItems := tree.FlattenItems(items)
 		logger.Printf("Displaying %d items\n", len(flattenedItems))
 		for _, item := range flattenedItems {
@@ -58,4 +66,5 @@ var listSessionsCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(listSessionsCmd)
+	listSessionsCmd.Flags().StringVarP(&search, "search", "s", "", "Filter items by search query")
 }

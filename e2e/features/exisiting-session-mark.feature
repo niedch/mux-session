@@ -16,10 +16,10 @@ Feature: Mux Session mark existing Sessions
       """
     Then I should see the following items in output:
       | item               |
-      | 󰄱 .*/project-one   |
-      | 󰄱 .*/project-two   |
-      | 󰄱 .*/project-three |
       |  test-session     |
+      | 󰄱 .*/project-one   |
+      | 󰄱 .*/project-three |
+      | 󰄱 .*/project-two   |
     When I run mux-session switch "project-one" with config:
       """
       search_paths = ["<search_path>"]
@@ -34,10 +34,10 @@ Feature: Mux Session mark existing Sessions
       """
     Then I should see the following items in output:
       | item               |
-      |  .*/project-one   |
-      | 󰄱 .*/project-two   |
-      | 󰄱 .*/project-three |
       |  test-session     |
+      | [] .*/project-one |
+      | 󰄱 .*/project-three |
+      | 󰄱 .*/project-two   |
 
   Scenario: Tmux internal Sessions should not be marked with "[ ]"
     Given a new tmux server
