@@ -62,7 +62,7 @@ directory name as the session name.`,
 		}
 		logger.Printf("Selected session: id=%s, display=%s\n", selected.Id, selected.Display)
 
-		projectConfig := config.GetProjectConfig(selected.Id)
+		projectConfig := config.GetProjectConfig(selected)
 		logger.Printf("Switching to session: %s\n", selected.Id)
 		ok, err := multiService.SwitchSession(selected)
 		if err != nil {

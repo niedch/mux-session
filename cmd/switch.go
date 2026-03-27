@@ -54,7 +54,7 @@ The ID can be a session name or directory path.`,
 		logger.Printf("Found item: id=%s, display=%s\n", item.Id, item.Display)
 
 		multiService := orchestrator.New(tmux)
-		projectConfig := config.GetProjectConfig(item.Id)
+		projectConfig := config.GetProjectConfig(item)
 
 		logger.Printf("Switching to session: %s\n", item.Id)
 		ok, err := multiService.SwitchSession(item)
@@ -79,6 +79,11 @@ func findItem(id string, items []dataproviders.Item) (*dataproviders.Item, error
 	for _, item := range items {
 		if item.Id == id {
 			return &item, nil
+		}
+		if len(item.SubItems) > 0 {
+			if found, _ := findItem(id, item.SubItems); found != nil {
+				return found, nil
+			}
 		}
 	}
 

@@ -3,6 +3,7 @@ package conf
 import (
 	"path/filepath"
 
+	"github.com/niedch/mux-session/internal/dataproviders"
 	"github.com/niedch/mux-session/internal/logger"
 
 	"github.com/adrg/xdg"
@@ -76,14 +77,26 @@ func loadProjectConfig(k *koanf.Koanf, configFile string) error {
 }
 
 // Finds Project Config otherwise returns Default
-func (c *Config) GetProjectConfig(dir string) ProjectConfig {
-	projectConfig := c.findProject(dir)
-
-	if projectConfig == nil {
-		return c.Default
+func (c *Config) GetProjectConfig(item *dataproviders.Item) ProjectConfig {
+	configId := item.Id
+	if item.ParentId != "" {
+		configId = item.ParentId
 	}
 
-	return *projectConfig
+	projectConfig := c.findProject(configId)
+
+	var result ProjectConfig
+	if projectConfig == nil {
+		result = c.Default
+	} else {
+		result = *projectConfig
+	}
+
+	if item.ParentId != "" && result.Name != nil {
+		result.Name = &item.Id
+	}
+
+	return result
 }
 
 func (c *Config) findProject(dir string) *ProjectConfig {
