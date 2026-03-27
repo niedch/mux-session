@@ -54,7 +54,7 @@ Feature: Search functionality
     And I search for "project"
     Then I should see the following items in output:
       | item          |
-      | project       |
       | project-alpha |
       | project-beta  |
+      | project       |
     And I should not see "random-dir" in output
