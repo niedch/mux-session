@@ -35,7 +35,7 @@ Feature: Mux Session mark existing Sessions
     Then I should see the following items in output:
       | item               |
       |  test-session     |
-      | [󰄱] .*/project-one |
+      | [] .*/project-one |
       | 󰄱 .*/project-three |
       | 󰄱 .*/project-two   |
 
