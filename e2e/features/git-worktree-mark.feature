@@ -16,10 +16,10 @@ Feature: Mux Session mark git worktrees
       """
     Then I should see the following items in output:
       | item                 |
-      | test-session         |
-      | .*/main-repo         |
-      | .*/my-worktree       |
-      | .*/regular-project   |
+      |  test-session       |
+      | 󰙅 .*/main-repo       |
+      | └── 󰄱 my-worktree    |
+      | 󰄱 .*/regular-project |
 
   Scenario: A worktree that has an active session should be marked with both "[w]" and "[x]"
     Given a new tmux server
@@ -42,10 +42,10 @@ Feature: Mux Session mark git worktrees
       """
     Then I should see the following items in output:
       | item                 |
-      | test-session         |
-      | .*/main-repo         |
-      | .*/my-worktree       |
-      | .*/regular-project   |
+      |  test-session       |
+      | 󰙅 .*/main-repo       |
+      | └── .*my-worktree     |
+      | 󰄱 .*/regular-project |
 
   Scenario: A worktree should inherit its parent's window configuration
     Given a new tmux server

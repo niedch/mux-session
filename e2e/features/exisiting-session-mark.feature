@@ -33,11 +33,11 @@ Feature: Mux Session mark existing Sessions
       search_paths = ["<search_path>"]
       """
     Then I should see the following items in output:
-      | item                |
-      |  test-session      |
+      | item               |
+      |  test-session     |
       | [󰄱] .*/project-one |
-      | 󰄱 .*/project-three  |
-      | 󰄱 .*/project-two    |
+      | 󰄱 .*/project-three |
+      | 󰄱 .*/project-two   |
 
   Scenario: Tmux internal Sessions should not be marked with "[ ]"
     Given a new tmux server

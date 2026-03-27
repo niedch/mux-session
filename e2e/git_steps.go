@@ -45,8 +45,8 @@ func RegisterGitSteps(ctx *godog.ScenarioContext) {
 			return fmt.Errorf("failed to commit: %v", err)
 		}
 
-		// Create the worktree in a separate directory
-		worktreeSubDir := filepath.Join(testCtx.tempDir, "my-worktree")
+		// Create the worktree in a subdirectory within the main repo folder
+		worktreeSubDir := filepath.Join(mainRepoDir, "my-worktree")
 		if err := execGitCommand(mainRepoDir, "worktree", "add", worktreeSubDir); err != nil {
 			return fmt.Errorf("failed to create worktree: %v", err)
 		}
