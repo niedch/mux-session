@@ -50,6 +50,7 @@ func GetSubdirectories(parentPath string) []Item {
 			Path:       itemDir,
 			IsWorktree: false,
 			TreeLevel:  1,
+			ParentId:   filepath.Base(parentPath),
 		})
 	}
 

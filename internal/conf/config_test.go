@@ -2,13 +2,15 @@ package conf
 
 import (
 	"testing"
+
+	"github.com/niedch/mux-session/internal/dataproviders"
 )
 
 func TestGetProjectConfig(t *testing.T) {
 	tests := []struct {
 		name     string
 		config   *Config
-		dir      string
+		item     *dataproviders.Item
 		expected ProjectConfig
 	}{
 		{
@@ -19,7 +21,7 @@ func TestGetProjectConfig(t *testing.T) {
 				},
 				Project: []ProjectConfig{},
 			},
-			dir: "project",
+			item: &dataproviders.Item{Id: "project"},
 			expected: ProjectConfig{
 				Name: stringPtr("default-project"),
 			},
@@ -36,7 +38,7 @@ func TestGetProjectConfig(t *testing.T) {
 					},
 				},
 			},
-			dir: "test-project",
+			item: &dataproviders.Item{Id: "test-project"},
 			expected: ProjectConfig{
 				Name: stringPtr("test-project"),
 			},
@@ -53,7 +55,7 @@ func TestGetProjectConfig(t *testing.T) {
 					},
 				},
 			},
-			dir: "another-project",
+			item: &dataproviders.Item{Id: "another-project"},
 			expected: ProjectConfig{
 				Name: stringPtr("default-project"),
 			},
@@ -73,7 +75,7 @@ func TestGetProjectConfig(t *testing.T) {
 					},
 				},
 			},
-			dir: "test-project",
+			item: &dataproviders.Item{Id: "test-project"},
 			expected: ProjectConfig{
 				Name: stringPtr("test-project"),
 				Env: map[string]string{
@@ -81,11 +83,34 @@ func TestGetProjectConfig(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "returns project with inherited name for worktree",
+			config: &Config{
+				Default: ProjectConfig{
+					Name: stringPtr("default-project"),
+				},
+				Project: []ProjectConfig{
+					{
+						Name: stringPtr("main-repo"),
+						WindowConfig: []WindowConfig{
+							{WindowName: "Inherited"},
+						},
+					},
+				},
+			},
+			item: &dataproviders.Item{
+				Id:       "my-worktree",
+				ParentId: "main-repo",
+			},
+			expected: ProjectConfig{
+				Name: stringPtr("my-worktree"),
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := tt.config.GetProjectConfig(tt.dir)
+			result := tt.config.GetProjectConfig(tt.item)
 
 			if result.Name == nil && tt.expected.Name != nil {
 				t.Errorf("Expected Name to be %s, but got nil", *tt.expected.Name)

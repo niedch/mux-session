@@ -14,6 +14,7 @@ type Item struct {
 	SubItems   []Item
 	TreeLevel  int
 	IsWorktree bool
+	ParentId   string
 }
 
 type DataProvider interface {
