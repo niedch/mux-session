@@ -19,6 +19,7 @@ func TestFilterTree_Normal(t *testing.T) {
 	assert.Equal(t, "apple\n", renderItems(FilterTree(items, "ap")))
 	assert.Equal(t, "banana\n", renderItems(FilterTree(items, "nan")))
 	assert.Equal(t, "", renderItems(FilterTree(items, "z")))
+	assert.Equal(t, "apple\nbanana\ncherry\n", renderItems(FilterTree(items, "")))
 }
 
 func TestFilterTree_PrioritizeCloserMatches(t *testing.T) {

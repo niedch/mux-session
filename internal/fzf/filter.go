@@ -125,9 +125,6 @@ func FilterTree(items []dataproviders.Item, query string) []dataproviders.Item {
 // createListItems creates the list of listItem models for rendering.
 func createListItems(items []dataproviders.Item, query string) []listItem {
 	queryLower := strings.ToLower(query)
-	if len(queryLower) == 0 || len(items) == 0 {
-		return nil
-	}
 	queryRunes := []rune(queryLower)
 	result := make([]listItem, 0, len(items))
 
