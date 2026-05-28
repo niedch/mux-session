@@ -35,8 +35,8 @@ Feature: Search functionality
     And I search for "project"
     Then I should see the following items in output:
       | item          |
-      | project-alpha |
       | project-beta  |
+      | project-alpha |
     And I should not see "random-dir" in output
 
   Scenario: List sessions with multiple search results
@@ -54,7 +54,7 @@ Feature: Search functionality
     And I search for "project"
     Then I should see the following items in output:
       | item          |
-      | project-alpha |
-      | project-beta  |
       | project       |
+      | project-beta  |
+      | project-alpha |
     And I should not see "random-dir" in output

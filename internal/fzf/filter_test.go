@@ -1,11 +1,13 @@
 package fzf
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/niedch/mux-session/internal/dataproviders"
 	"github.com/stretchr/testify/assert"
 )
+
 
 func TestFilterTree_Normal(t *testing.T) {
 	items := []dataproviders.Item{
@@ -14,16 +16,20 @@ func TestFilterTree_Normal(t *testing.T) {
 		{Display: "cherry"},
 	}
 
-	filtered := FilterTree(items, "ap")
-	assert.Len(t, filtered, 1)
-	assert.Equal(t, "apple", filtered[0].Display)
+	assert.Equal(t, "apple\n", renderItems(FilterTree(items, "ap")))
+	assert.Equal(t, "banana\n", renderItems(FilterTree(items, "nan")))
+	assert.Equal(t, "", renderItems(FilterTree(items, "z")))
+	assert.Equal(t, "apple\nbanana\ncherry\n", renderItems(FilterTree(items, "")))
+}
 
-	filtered = FilterTree(items, "nan")
-	assert.Len(t, filtered, 1)
-	assert.Equal(t, "banana", filtered[0].Display)
+func TestFilterTree_PrioritizeCloserMatches(t *testing.T) {
+	items := []dataproviders.Item{
+		{Display: "/home/nic/nixos-dotfiles"},
+		{Display: "/home/nic/dotfiles"},
+		{Display: "/home/nic/mux-prompt"},
+	}
 
-	filtered = FilterTree(items, "z")
-	assert.Empty(t, filtered)
+	assert.Equal(t, "/home/nic/mux-prompt\n/home/nic/nixos-dotfiles\n", renderItems(FilterTree(items, "nix")))
 }
 
 func TestFilterTree_WithSubItems(t *testing.T) {
@@ -43,23 +49,25 @@ func TestFilterTree_WithSubItems(t *testing.T) {
 		},
 	}
 
-	// Filter matches parent (fruit) -> should return parent with all children
-	filtered := FilterTree(items, "fruit")
-	assert.Len(t, filtered, 1)
-	assert.Equal(t, "fruit", filtered[0].Display)
-	assert.Len(t, filtered[0].SubItems, 2)
+	assert.Equal(t, "fruit\n  apple\n  banana\n", renderItems(FilterTree(items, "fruit")))
+	assert.Equal(t, "fruit\n  apple\n", renderItems(FilterTree(items, "apple")))
+	assert.Equal(t, "vegetable\n  carrot\n", renderItems(FilterTree(items, "carrot")))
+}
 
-	// Filter matches child (apple) -> should return parent with only matching child
-	filtered = FilterTree(items, "apple")
-	assert.Len(t, filtered, 1)
-	assert.Equal(t, "fruit", filtered[0].Display)
-	assert.Len(t, filtered[0].SubItems, 1)
-	assert.Equal(t, "apple", filtered[0].SubItems[0].Display)
 
-	// Filter matches child (carrot) -> should return parent (vegetable)
-	filtered = FilterTree(items, "carrot")
-	assert.Len(t, filtered, 1)
-	assert.Equal(t, "vegetable", filtered[0].Display)
-	assert.Len(t, filtered[0].SubItems, 1)
-	assert.Equal(t, "carrot", filtered[0].SubItems[0].Display)
+func renderItems(items []dataproviders.Item) string {
+	var b strings.Builder
+	renderItemsRec(&b, items, "")
+	return b.String()
+}
+
+func renderItemsRec(b *strings.Builder, items []dataproviders.Item, indent string) {
+	for _, item := range items {
+		b.WriteString(indent)
+		b.WriteString(item.Display)
+		b.WriteByte('\n')
+		if len(item.SubItems) > 0 {
+			renderItemsRec(b, item.SubItems, indent+"  ")
+		}
+	}
 }

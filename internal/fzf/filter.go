@@ -11,115 +11,110 @@ const (
 	prefixMatchBonus = 100
 )
 
-// getMatches finds the indices of characters in text that match the query runes.
-// This is used for highlighting.
-func getMatches(text string, queryRunes []rune) []int {
-	if len(queryRunes) == 0 {
+// getMatches finds the byte offsets of characters in lowercased text
+// that match the query runes in sequence (subsequence/fuzzy match).
+func getMatches(textLower string, queryRunes []rune) []int {
+	if len(queryRunes) == 0 || len(queryRunes) > len(textLower) {
 		return nil
 	}
 	matches := make([]int, 0, len(queryRunes))
-	targetRunes := []rune(strings.ToLower(text))
-	queryIndex, targetIndex := 0, 0
-
-	for queryIndex < len(queryRunes) && targetIndex < len(targetRunes) {
-		if queryRunes[queryIndex] == targetRunes[targetIndex] {
-			matches = append(matches, targetIndex)
-			queryIndex++
+	qi := 0
+	for bi, r := range textLower {
+		if queryRunes[qi] == r {
+			matches = append(matches, bi)
+			qi++
+			if qi == len(queryRunes) {
+				return matches
+			}
 		}
-		targetIndex++
 	}
-
-	// Only return matches if the entire query was found
-	if queryIndex == len(queryRunes) {
-		return matches
-	}
-
 	return nil
 }
 
-// filterNode recursively filters a single item and its children.
-// It returns the (potentially modified) item and a boolean indicating if a match was found.
-func filterNode(item dataproviders.Item, queryRunes []rune) (dataproviders.Item, bool) {
-	isMatch := getMatches(item.Display, queryRunes) != nil
+// getMatchQuality scores how well lowercased text matches the lowercased query
+// as a contiguous substring. Higher is better.
+func getMatchQuality(textLower string, queryLower string) int {
+	matchStart := strings.Index(textLower, queryLower)
+	if matchStart == -1 {
+		return 0
+	}
+	suffixLength := len(textLower) - len(queryLower)
+	if matchStart == 0 {
+		return prefixMatchBonus + suffixLength
+	}
+	return suffixLength + 1
+}
 
-	if isMatch {
-		// If the parent matches, return it with all its original children.
-		return item, true
+// filterNode recursively filters children of an item whose display did not match.
+// It returns the (potentially modified) item and a boolean indicating if a match was found.
+func filterNode(item dataproviders.Item, queryLower string, queryRunes []rune) (dataproviders.Item, bool) {
+	if len(item.SubItems) == 0 {
+		return dataproviders.Item{}, false
 	}
 
-	// If the parent does not match, check the children.
 	var matchingChildren []dataproviders.Item
-	hasMatchingChild := false
 	for _, child := range item.SubItems {
-		filteredChild, childMatches := filterNode(child, queryRunes)
-		if childMatches {
-			hasMatchingChild = true
-			matchingChildren = append(matchingChildren, filteredChild)
+		textLower := strings.ToLower(child.Display)
+		if getMatches(textLower, queryRunes) != nil {
+			matchingChildren = append(matchingChildren, child)
+		} else {
+			filteredChild, childMatches := filterNode(child, queryLower, queryRunes)
+			if childMatches {
+				matchingChildren = append(matchingChildren, filteredChild)
+			}
 		}
 	}
 
-	// If any child matches, return a new item with only the matching children.
-	if hasMatchingChild {
+	if len(matchingChildren) > 0 {
 		newItem := item
 		newItem.SubItems = matchingChildren
 		return newItem, true
 	}
 
-	// If neither the item nor its children match, it's not included.
 	return dataproviders.Item{}, false
-}
-
-// getMatchQuality returns how well text matches the query.
-// Higher values mean better matches. It considers:
-// - Items where the query appears as a prefix are best (prefixMatchBonus bonus)
-// - Among those, shorter text (longer suffix after query) is better
-// - Items where the query appears elsewhere are sorted by where they start
-func getMatchQuality(text string, queryRunes []rune) int {
-	textLower := strings.ToLower(text)
-	matchStart := strings.Index(textLower, string(queryRunes))
-	if matchStart == -1 {
-		return 0
-	}
-
-	textLength := len(textLower)
-	queryLength := len(queryRunes)
-	suffixLength := textLength - queryLength
-
-	if matchStart == 0 {
-		return prefixMatchBonus + suffixLength
-	}
-
-	return suffixLength + 1
 }
 
 // FilterTree filters a slice of items based on a query.
 // It returns a new tree containing only items that match or have children that match.
 // Items are sorted by match quality (longer items with the query as prefix come first).
 func FilterTree(items []dataproviders.Item, query string) []dataproviders.Item {
-	queryRunes := []rune(strings.ToLower(query))
-	if len(queryRunes) == 0 {
+	queryLower := strings.ToLower(query)
+	if len(queryLower) == 0 {
 		return items
 	}
+	if len(items) == 0 {
+		return nil
+	}
+	queryRunes := []rune(queryLower)
 
 	type itemWithQuality struct {
 		item    dataproviders.Item
 		quality int
 	}
 
-	var itemsWithQuality []itemWithQuality
+	itemsWithQuality := make([]itemWithQuality, 0, len(items))
 	for _, item := range items {
-		filteredItem, matches := filterNode(item, queryRunes)
-		if matches {
-			quality := getMatchQuality(item.Display, queryRunes)
-			itemsWithQuality = append(itemsWithQuality, itemWithQuality{item: filteredItem, quality: quality})
+		textLower := strings.ToLower(item.Display)
+		if getMatches(textLower, queryRunes) != nil {
+			quality := getMatchQuality(textLower, queryLower)
+			itemsWithQuality = append(itemsWithQuality, itemWithQuality{item: item, quality: quality})
+		} else {
+			filteredItem, hasMatch := filterNode(item, queryLower, queryRunes)
+			if hasMatch {
+				itemsWithQuality = append(itemsWithQuality, itemWithQuality{item: filteredItem, quality: 0})
+			}
 		}
 	}
 
+	if len(itemsWithQuality) == 0 {
+		return nil
+	}
+
 	sort.Slice(itemsWithQuality, func(i, j int) bool {
-		return itemsWithQuality[i].quality > itemsWithQuality[j].quality
+		return itemsWithQuality[i].quality < itemsWithQuality[j].quality
 	})
 
-	var filteredItems []dataproviders.Item
+	filteredItems := make([]dataproviders.Item, 0, len(itemsWithQuality))
 	for _, iwq := range itemsWithQuality {
 		filteredItems = append(filteredItems, iwq.item)
 	}
@@ -129,11 +124,13 @@ func FilterTree(items []dataproviders.Item, query string) []dataproviders.Item {
 
 // createListItems creates the list of listItem models for rendering.
 func createListItems(items []dataproviders.Item, query string) []listItem {
-	var result []listItem
-	queryRunes := []rune(strings.ToLower(query))
+	queryLower := strings.ToLower(query)
+	queryRunes := []rune(queryLower)
+	result := make([]listItem, 0, len(items))
 
 	for i, item := range items {
-		matches := getMatches(item.Display, queryRunes)
+		textLower := strings.ToLower(item.Display)
+		matches := getMatches(textLower, queryRunes)
 		result = append(result, listItem{
 			text:    item.Display,
 			index:   i,
