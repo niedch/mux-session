@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/glamour"
+	"github.com/muesli/termenv"
 	"github.com/niedch/mux-session/internal/dataproviders"
 )
 
@@ -16,7 +17,8 @@ type ReadmePreviewProvider struct {
 
 func NewReadmePreviewProvider(width int) (*ReadmePreviewProvider, error) {
 	renderer, err := glamour.NewTermRenderer(
-		glamour.WithAutoStyle(),
+		glamour.WithEnvironmentConfig(),
+		glamour.WithColorProfile(termenv.ANSI),
 		glamour.WithWordWrap(width),
 	)
 	if err != nil {
@@ -70,7 +72,8 @@ func (r *ReadmePreviewProvider) Name() string {
 
 func (r *ReadmePreviewProvider) SetWidth(width int) error {
 	renderer, err := glamour.NewTermRenderer(
-		glamour.WithAutoStyle(),
+		glamour.WithEnvironmentConfig(),
+		glamour.WithColorProfile(termenv.ANSI),
 		glamour.WithWordWrap(width),
 	)
 	if err != nil {
