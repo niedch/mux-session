@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/charmbracelet/glamour"
 	"github.com/muesli/termenv"
@@ -12,6 +13,7 @@ import (
 )
 
 type ReadmePreviewProvider struct {
+	mu       sync.Mutex
 	renderer *glamour.TermRenderer
 }
 
@@ -58,7 +60,9 @@ func (r *ReadmePreviewProvider) Render(item any) (string, error) {
 		return "", fmt.Errorf("error reading README.md: %w", err)
 	}
 
+	r.mu.Lock()
 	rendered, err := r.renderer.Render(string(data))
+	r.mu.Unlock()
 	if err != nil {
 		return "", fmt.Errorf("error rendering markdown: %w", err)
 	}
@@ -79,6 +83,8 @@ func (r *ReadmePreviewProvider) SetWidth(width int) error {
 	if err != nil {
 		return err
 	}
+	r.mu.Lock()
 	r.renderer = renderer
+	r.mu.Unlock()
 	return nil
 }
