@@ -11,13 +11,13 @@
       eachSystem = flake-utils.lib.eachDefaultSystem;
 
       # Bump this when tagging a new release
-      version = "1.0.4";
+      version = "1.0.5";
 
       mkPkg = pkgs: (pkgs.buildGoModule {
         pname = "mux-session";
         inherit version;
         src = ./.;
-        vendorHash = "sha256-7it/kFzW4DG3Cmvevipe5oxf9KHTnR4KyB8C6aE903Q=";
+        vendorHash = "sha256-AEL9MIZ7mh96lG2PInaJ8Mxh3YGmdYjgsW6AXqekJJM=";
         ldflags = [ "-s" "-w" ];
         subPackages = [ "." ];
         meta = with pkgs.lib; {
